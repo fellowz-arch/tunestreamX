@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuneStreamX - Music Downloader</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-content">
+            <h1 class="splash-title">🎵 TuneStreamX</h1>
+            <div class="splash-subtitle">Stream It. Feel It. Enjoy It.</div>
+        </div>
+    </div>
+    <div class="container" id="mainApp" style="display: none;">
+        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        <div class="header">
+            <h1>🎵 TuneStreamX</h1>
+        </div>
+        <div class="support-section">
+            <a href="https://wa.me/233103024172" target="_blank" class="support-btn">💬 Support</a>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search for music..." autocomplete="off">
+            <button onclick="search()">Search</button>
+            <div id="suggestions" class="suggestions"></div>
+        </div>
+        <div class="tabs">
+            <button class="tab active" onclick="loadTab('trending', this)">Trending</button>
+            <button class="tab" onclick="loadTab('top', this)">Top</button>
+            <button class="tab" onclick="loadTab('foryou', this)">For You</button>
+        </div>
+        <div id="results"><p class="loading">Loading trending music...</p></div>
+    </div>
+    <div id="player" class="player">
+        <div class="player-info">
+            <img id="playerImg" src="" alt="">
+            <div id="playerTitle">No song playing</div>
+        </div>
+        <iframe id="playerFrame" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+        <div class="player-controls">
+            <button class="expand-btn" onclick="toggleTheaterMode()">⛶</button>
+            <button class="close-btn" onclick="closePlayer()">✕</button>
+        </div>
+    </div>
+    <div id="theaterPlayer" class="theater-player">
+        <div class="theater-header">
+            <div class="theater-title"></div>
+            <div class="theater-controls">
+                <button class="minimize-btn" onclick="toggleTheaterMode()">⬇</button>
+                <button class="theater-close-btn" onclick="closePlayer()">✕</button>
+            </div>
+        </div>
+        <iframe id="theaterFrame" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>
