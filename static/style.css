@@ -290,6 +290,7 @@ button:hover {
     }
 }
 
+<<<<<<< HEAD
 .stats {
     display: flex;
     gap: 15px;
@@ -323,12 +324,15 @@ button:hover {
     color: white;
 }
 
+=======
+>>>>>>> ea52aef7016199e888802cc14e06fd488c571781
 .result-item {
     background: var(--card-bg);
     padding: 15px;
     border-radius: 12px;
     display: flex;
     flex-direction: column;
+<<<<<<< HEAD
     gap: 10px;
     transition: all 0.3s ease;
     height: 100%;
@@ -339,6 +343,12 @@ button:hover {
 .result-item:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+=======
+    gap: 12px;
+    transition: background 0.3s;
+    height: 100%;
+    min-height: 350px;
+>>>>>>> ea52aef7016199e888802cc14e06fd488c571781
 }
 
 .result-item img {
@@ -507,6 +517,7 @@ button:hover {
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
+<<<<<<< HEAD
     width: 95%;
     max-width: 1400px;
     height: 80vh;
@@ -553,6 +564,9 @@ button:hover {
     font-size: 18px;
     grid-column: 1 / -1;
 }
+=======
+    width: 80%;
+>>>>>>> ea52aef7016199e888802cc14e06fd488c571781
     max-width: 1200px;
     height: 60vh;
     background: var(--card-bg);
@@ -598,6 +612,7 @@ button:hover {
     font-size: 18px;
     grid-column: 1 / -1;
 }
+<<<<<<< HEAD
     max-width: 1400px;
     height: 80vh;
     background: var(--card-bg);
@@ -649,3 +664,5 @@ button:hover {
     font-size: 18px;
     grid-column: 1 / -1;
 }
+=======
+>>>>>>> ea52aef7016199e888802cc14e06fd488c571781
