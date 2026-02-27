@@ -3,39 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TuneStreamX - Music Downloader</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>TuneStreamX - Stream Music Online</title>
+    <meta name="description" content="TuneStreamX - Stream your favorite music online. Discover trending songs, top hits, and personalized recommendations.">
+    <meta name="keywords" content="music streaming, online music, songs, trending music, TuneStreamX">
+    <link rel="icon" type="image/png" href="/static/TunestreamX logo.png">
+    <link rel="apple-touch-icon" href="/static/TunestreamX logo.png">
+    <meta property="og:title" content="TuneStreamX - Stream Music Online">
+    <meta property="og:description" content="Stream your favorite music online with TuneStreamX">
+    <meta property="og:image" content="/static/TunestreamX logo.png">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="stylesheet" href="/static/youtube-style.css">
 </head>
 <body>
     <div id="splashScreen" class="splash-screen">
         <div class="splash-content">
-            <h1 class="splash-title">🎵 TuneStreamX</h1>
-<<<<<<< HEAD
+            <img src="/static/TunestreamX logo.png" alt="TuneStreamX Logo" class="splash-logo">
+            <h1 class="splash-title">TuneStreamX</h1>
             <div class="splash-subtitle">Stream It. Feel It. Enjoy It.</div>
-=======
-            <div class="splash-subtitle">Stream It. Feel It.</div>
->>>>>>> ea52aef7016199e888802cc14e06fd488c571781
         </div>
     </div>
-    <div class="container" id="mainApp" style="display: none;">
-        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <div id="mainApp" style="display: none;">
+        <!-- desktop header -->
         <div class="header">
-            <h1>🎵 TuneStreamX</h1>
+            <div class="header-left">
+                <div class="logo">
+                    <img src="/static/TunestreamX logo.png" alt="TuneStreamX" class="logo-img">
+                    <span class="logo-text">TuneStreamX</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search" autocomplete="off">
+                    <button onclick="search()">🔍</button>
+                </div>
+                <div id="suggestions" class="suggestions"></div>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn">👤</button>
+            </div>
         </div>
-        <div class="support-section">
-            <a href="https://wa.me/233103024172" target="_blank" class="support-btn">💬 Support</a>
+
+        <!-- desktop sidebar -->
+        <div class="sidebar" id="sidebar">
+            <a class="sidebar-item active" onclick="loadTab('foryou', this)">
+                <span class="icon">🏠</span>
+                <span class="label">Home</span>
+            </a>
+            <a class="sidebar-item" onclick="loadTab('trending', this)">
+                <span class="icon">🔍</span>
+                <span class="label">Explore</span>
+            </a>
+            <a class="sidebar-item" onclick="loadTab('live', this)">
+                <span class="icon">🔴</span>
+                <span class="label">Live</span>
+            </a>
+            <a class="sidebar-item" onclick="loadTab('library', this)">
+                <span class="icon">📚</span>
+                <span class="label">Library</span>
+            </a>
+            <a class="sidebar-item" onclick="loadTab('profile', this)">
+                <span class="icon">👤</span>
+                <span class="label">Profile</span>
+            </a>
         </div>
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Search for music..." autocomplete="off">
-            <button onclick="search()">Search</button>
-            <div id="suggestions" class="suggestions"></div>
+
+        <!-- main content area (contains mobile-specific elements which will be hidden on desktop) -->
+        <div class="main-content">
+            <nav class="mobile-header">
+                <div class="mobile-header-content">
+                    <div class="logo">
+                        <img src="/static/TunestreamX logo.png" alt="TuneStreamX" class="logo-img">
+                        <span class="logo-text">TuneStreamX</span>
+                    </div>
+                    <div class="mobile-search">
+                        <input type="text" id="searchInput" placeholder="Search" autocomplete="off">
+                        <div id="suggestions" class="suggestions"></div>
+                    </div>
+                    <button class="profile-btn">👤</button>
+                </div>
+            </nav>
+            
+            <div class="category-tabs">
+                <div class="tab active" onclick="loadTab('foryou', this)">For You</div>
+                <div class="tab" onclick="loadTab('trending', this)">Trending</div>
+                <div class="tab" onclick="loadTab('top', this)">Albums</div>
+            </div>
+            
+            <div class="featured-banner">
+                <div class="banner-scroll" id="bannerScroll">
+                    <div class="banner-item">
+                        <img src="https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" alt="Featured">
+                        <div class="banner-text">
+                            <h3>Trending Now</h3>
+                            <p>Discover the hottest tracks</p>
+                        </div>
+                    </div>
+                    <div class="banner-item">
+                        <img src="https://i.ytimg.com/vi/kJQP7kiw5Fk/maxresdefault.jpg" alt="Featured">
+                        <div class="banner-text">
+                            <h3>New Releases</h3>
+                            <p>Fresh music just for you</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <main class="mobile-content">
+                <div id="results"><p class="loading">Loading music...</p></div>
+            </main>
+            
+            <div class="recently-played">
+                <h3>Recently Played</h3>
+                <div class="horizontal-scroll" id="recentlyPlayed">
+                    <!-- Recently played items will be populated here -->
+                </div>
+            </div>
+            
+            <nav class="bottom-nav">
+                <div class="nav-item active" onclick="loadTab('foryou', this)">
+                    <span class="icon">🏠</span>
+                    <span class="label">Home</span>
+                </div>
+                <div class="nav-item" onclick="loadTab('trending', this)">
+                    <span class="icon">⚡</span>
+                    <span class="label">Trending</span>
+                </div>
+                <div class="nav-item">
+                    <span class="icon">📚</span>
+                    <span class="label">Library</span>
+                </div>
+                <div class="nav-item">
+                    <span class="icon">🔍</span>
+                    <span class="label">Search</span>
+                </div>
+                <div class="nav-item">
+                    <span class="icon">👤</span>
+                    <span class="label">Profile</span>
+                </div>
+            </nav>
         </div>
-        <div class="tabs">
-            <button class="tab active" onclick="loadTab('trending', this)">Trending</button>
-            <button class="tab" onclick="loadTab('top', this)">Top</button>
-            <button class="tab" onclick="loadTab('foryou', this)">For You</button>
-        </div>
-        <div id="results"><p class="loading">Loading trending music...</p></div>
     </div>
     <div id="player" class="player">
         <div class="player-info">
