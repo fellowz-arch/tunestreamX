@@ -3,19 +3,35 @@ let suggestTimeout;
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('active');
+    const mainContent = document.querySelector('.main-content');
+    
+    if (window.innerWidth <= 1024) {
+        sidebar.classList.toggle('active');
+    } else {
+        sidebar.classList.toggle('hidden');
+        if (mainContent) {
+            mainContent.classList.toggle('expanded');
+        }
+    }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const collapseBtn = document.getElementById('collapseBtn');
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', toggleSidebar);
+    }
+});
 
 async function loadTab(tab, element) {
     currentTab = tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.sidebar-item').forEach(t => t.classList.remove('active')); // clear desktop menu
+    document.querySelectorAll('.sidebar-item').forEach(t => t.classList.remove('active'));
     if (element) element.classList.add('active');
     
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = '<p class="loading">Loading...</p>';
-    // if sidebar is open on small screen, close it after navigation
+    
     if (window.innerWidth <= 768) {
         const sb = document.getElementById('sidebar');
         if (sb) sb.classList.remove('active');
@@ -25,7 +41,6 @@ async function loadTab(tab, element) {
         const response = await fetch(`/${tab}`);
         const videos = await response.json();
         displayResults(videos);
-        updateRecentlyPlayed(videos.slice(0, 6));
     } catch (error) {
         console.error('Error loading tab:', error);
         resultsDiv.innerHTML = '<p class="loading">Error loading songs. Please try again.</p>';
@@ -33,7 +48,8 @@ async function loadTab(tab, element) {
 }
 
 async function search() {
-    const query = document.getElementById('searchInput').value;
+    const searchInput = document.getElementById('searchInput');
+    const query = searchInput.value.trim();
     const resultsDiv = document.getElementById('results');
     
     if (!query) return;
@@ -87,77 +103,79 @@ function displayResults(videos) {
     });
 }
 
-function updateRecentlyPlayed(videos) {
-    const recentDiv = document.getElementById('recentlyPlayed');
-    if (!recentDiv || !videos) return;
-    
-    recentDiv.innerHTML = videos.map(v => `
-        <div class="recent-item" onclick="playAudio('${v.id}', '${v.title}', '${v.thumbnail}')">
-            <img src="${v.thumbnail}" alt="${v.title}">
-            <div class="title">${v.title}</div>
-        </div>
-    `).join('');
-}
-
-function formatViews(views) {
-    if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M';
-    if (views >= 1000) return (views / 1000).toFixed(1) + 'K';
-    return views.toString();
-}
-
-function formatLikes(likes) {
-    if (likes >= 1000000) return (likes / 1000000).toFixed(1) + 'M';
-    if (likes >= 1000) return (likes / 1000).toFixed(1) + 'K';
-    return likes.toString();
-}
-
-function toggleLike(button, videoId) {
-    const isLiked = button.classList.contains('liked');
-    if (isLiked) {
-        button.classList.remove('liked');
-        button.innerHTML = '❤ Like';
-    } else {
-        button.classList.add('liked');
-        button.innerHTML = '❤ Liked';
-    }
-}
-
 let currentVideoId = '';
 let currentTitle = '';
+let currentArtist = '';
 let currentThumbnail = '';
+let isPlaying = false;
 
 function playAudio(videoId, title, thumbnail) {
     currentVideoId = videoId;
     currentTitle = title;
     currentThumbnail = thumbnail;
+    currentArtist = 'Unknown Artist';
+    isPlaying = true;
     
-    const player = document.getElementById('player');
-    const playerTitle = document.getElementById('playerTitle');
-    const playerImg = document.getElementById('playerImg');
-    const playerFrame = document.getElementById('playerFrame');
+    const fullPlayer = document.getElementById('fullPlayer');
+    const fullPlayerImg = document.getElementById('fullPlayerImg');
+    const fullPlayerTitle = document.getElementById('fullPlayerTitle');
+    const fullPlayerArtist = document.getElementById('fullPlayerArtist');
+    const fullPlayerFrame = document.getElementById('fullPlayerFrame');
+    const playPauseBtn = document.getElementById('playPauseBtn');
     
-    playerTitle.textContent = title;
-    playerImg.src = thumbnail;
-    playerFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-    player.classList.add('active');
+    fullPlayerImg.src = thumbnail;
+    fullPlayerTitle.textContent = title;
+    fullPlayerArtist.textContent = currentArtist;
+    fullPlayerFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+    playPauseBtn.textContent = '⏸';
+    fullPlayer.classList.add('active');
 }
 
-function toggleTheaterMode() {
-    const player = document.getElementById('player');
-    const theaterPlayer = document.getElementById('theaterPlayer');
-    const theaterFrame = document.getElementById('theaterFrame');
-    const theaterTitle = document.querySelector('.theater-title');
+function togglePlayPause() {
+    const fullPlayerFrame = document.getElementById('fullPlayerFrame');
+    const playPauseBtn = document.getElementById('playPauseBtn');
     
-    if (theaterPlayer.classList.contains('active')) {
-        theaterPlayer.classList.remove('active');
-        player.classList.add('active');
-        theaterFrame.src = '';
+    if (isPlaying) {
+        // Pause the video by removing autoplay and reloading without it
+        const currentSrc = fullPlayerFrame.src;
+        if (currentSrc.includes('autoplay=1')) {
+            fullPlayerFrame.src = currentSrc.replace('autoplay=1', 'autoplay=0');
+        }
+        playPauseBtn.textContent = '▶';
+        isPlaying = false;
     } else {
-        player.classList.remove('active');
-        theaterPlayer.classList.add('active');
-        theaterTitle.textContent = currentTitle;
-        theaterFrame.src = `https://www.youtube.com/embed/${currentVideoId}?autoplay=1`;
+        // Play the video by adding autoplay
+        const currentSrc = fullPlayerFrame.src;
+        if (currentSrc.includes('autoplay=0')) {
+            fullPlayerFrame.src = currentSrc.replace('autoplay=0', 'autoplay=1');
+        } else if (!currentSrc.includes('autoplay')) {
+            fullPlayerFrame.src = currentSrc + '&autoplay=1';
+        }
+        playPauseBtn.textContent = '⏸';
+        isPlaying = true;
     }
+}
+
+function nextSong() {
+    console.log('Next song');
+}
+
+function previousSong() {
+    console.log('Previous song');
+}
+
+function closePlayer() {
+    const fullPlayer = document.getElementById('fullPlayer');
+    const fullPlayerFrame = document.getElementById('fullPlayerFrame');
+    
+    fullPlayer.classList.remove('active');
+    fullPlayerFrame.src = '';
+    
+    currentVideoId = '';
+    currentTitle = '';
+    currentArtist = '';
+    currentThumbnail = '';
+    isPlaying = false;
 }
 
 function initializeSearch() {
@@ -207,6 +225,7 @@ function initializeSearch() {
 function selectSuggestion(text) {
     const searchInput = document.getElementById('searchInput');
     const suggestionsDiv = document.getElementById('suggestions');
+    
     if (searchInput && suggestionsDiv) {
         searchInput.value = text;
         suggestionsDiv.classList.remove('active');
@@ -221,22 +240,10 @@ document.addEventListener('click', (e) => {
     }
 });
 
-function closePlayer() {
-    const player = document.getElementById('player');
-    const theaterPlayer = document.getElementById('theaterPlayer');
-    const playerFrame = document.getElementById('playerFrame');
-    const theaterFrame = document.getElementById('theaterFrame');
-    
-    player.classList.remove('active');
-    theaterPlayer.classList.remove('active');
-    playerFrame.src = '';
-    theaterFrame.src = '';
-}
-
 function toggleTheme() {
     document.body.classList.toggle('light');
     const isLight = document.body.classList.contains('light');
-    const themeToggle = document.querySelector('.theme-toggle');
+    const themeToggle = document.querySelector('[onclick="toggleTheme()"]');
     if (themeToggle) {
         themeToggle.textContent = isLight ? '🌙' : '☀️';
     }
@@ -247,7 +254,7 @@ window.onload = () => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
         document.body.classList.add('light');
-        const themeToggle = document.querySelector('.theme-toggle');
+        const themeToggle = document.querySelector('[onclick="toggleTheme()"]');
         if (themeToggle) themeToggle.textContent = '🌙';
     }
     
@@ -258,9 +265,6 @@ window.onload = () => {
         if (mainApp) mainApp.style.display = 'block';
         
         initializeSearch();
-        
-        // Load for you by default
-        const firstTab = document.querySelector('.tab.active');
-        loadTab('foryou', firstTab);
+        loadTab('foryou');
     }, 3000);
 };

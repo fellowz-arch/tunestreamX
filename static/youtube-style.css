@@ -1,11 +1,12 @@
 :root {
-    --bg-primary: #181818;
-    --bg-secondary: #212121;
+    /* YouTube desktop dark theme per user's spec */
+    --bg-primary: #0F0F0F; /* page background, sidebar */
+    --bg-secondary: #181818; /* cards / surfaces */
     --bg-hover: #272727;
-    --text-primary: #f1f1f1;
-    --text-secondary: #606060;
-    --accent: #065fd4;
-    --accent-hover: #0d47a1;
+    --text-primary: #FFFFFF;
+    --text-secondary: #AAAAAA;
+    --accent: #FF0000; /* YouTube red */
+    --accent-hover: #cc0000;
     --border: #303030;
     --success: #10b981;
     --warning: #f59e0b;

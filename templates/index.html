@@ -12,7 +12,7 @@
     <meta property="og:description" content="Stream your favorite music online with TuneStreamX">
     <meta property="og:image" content="/static/TunestreamX logo.png">
     <meta name="theme-color" content="#6366f1">
-    <link rel="stylesheet" href="/static/youtube-style.css">
+    <link rel="stylesheet" href="/static/yt-layout.css">
 </head>
 <body>
     <div id="splashScreen" class="splash-screen">
@@ -24,87 +24,75 @@
     </div>
     <div id="mainApp" style="display: none;">
         <!-- desktop header -->
-        <div class="header">
+        <header class="header">
             <div class="header-left">
-                <div class="logo">
+                <button class="menu-btn" id="collapseBtn" title="Toggle sidebar">☰</button>
+                <a class="logo" href="#" onclick="loadTab('foryou')">
                     <img src="/static/TunestreamX logo.png" alt="TuneStreamX" class="logo-img">
                     <span class="logo-text">TuneStreamX</span>
-                </div>
+                </a>
             </div>
             <div class="header-center">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="Search" autocomplete="off">
                     <button onclick="search()">🔍</button>
                 </div>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀️</button>
                 <div id="suggestions" class="suggestions"></div>
             </div>
             <div class="header-right">
-                <button class="icon-btn">👤</button>
+                <button class="icon-btn" title="Profile">👤</button>
             </div>
-        </div>
+        </header>
 
         <!-- desktop sidebar -->
-        <div class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar">
             <a class="sidebar-item active" onclick="loadTab('foryou', this)">
                 <span class="icon">🏠</span>
                 <span class="label">Home</span>
-            </a>
-            <a class="sidebar-item" onclick="loadTab('trending', this)">
-                <span class="icon">🔍</span>
-                <span class="label">Explore</span>
             </a>
             <a class="sidebar-item" onclick="loadTab('shorts', this)">
                 <span class="icon">🎬</span>
                 <span class="label">Shorts</span>
             </a>
+            <a class="sidebar-item" onclick="loadTab('subscriptions', this)">
+                <span class="icon">🔔</span>
+                <span class="label">Subscriptions</span>
+            </a>
+            <hr />
             <a class="sidebar-item" onclick="loadTab('library', this)">
                 <span class="icon">📚</span>
                 <span class="label">Library</span>
             </a>
-            <a class="sidebar-item" onclick="loadTab('profile', this)">
-                <span class="icon">👤</span>
-                <span class="label">Profile</span>
+            <a class="sidebar-item" onclick="loadTab('history', this)">
+                <span class="icon">🕘</span>
+                <span class="label">History</span>
             </a>
-        </div>
+            <a class="sidebar-item" onclick="loadTab('yourvideos', this)">
+                <span class="icon">🎥</span>
+                <span class="label">Your videos</span>
+            </a>
+            <a class="sidebar-item" onclick="loadTab('watchlater', this)">
+                <span class="icon">⏱</span>
+                <span class="label">Watch later</span>
+            </a>
+            <a class="sidebar-item" onclick="loadTab('liked', this)">
+                <span class="icon">👍</span>
+                <span class="label">Liked videos</span>
+            </a>
+            <hr />
+            <a class="sidebar-item" onclick="loadTab('settings', this)">
+                <span class="icon">⚙️</span>
+                <span class="label">Settings</span>
+            </a>
+            <a class="sidebar-item" onclick="loadTab('help', this)">
+                <span class="icon">❓</span>
+                <span class="label">Help</span>
+            </a>
+        </aside>
 
-        <!-- main content area (contains mobile-specific elements which will be hidden on desktop) -->
+        <!-- main content area -->
         <div class="main-content">
-            <nav class="mobile-header">
-                <div class="mobile-header-content">
-                    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-                    <div class="logo">
-                        <img src="/static/TunestreamX logo.png" alt="TuneStreamX" class="logo-img">
-                        <span class="logo-text">TuneStreamX</span>
-                    </div>
-                    <div class="mobile-search">
-                        <input type="text" id="searchInput" placeholder="Search" autocomplete="off">
-                        <div id="suggestions" class="suggestions"></div>
-                    </div>
-                    <button class="profile-btn">👤</button>
-                </div>
-            </nav>
-            
-            <!-- removed category tabs to match YouTube feed layout -->
-            
-            <div class="featured-banner">
-                <div class="banner-scroll" id="bannerScroll">
-                    <div class="banner-item">
-                        <img src="https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" alt="Featured">
-                        <div class="banner-text">
-                            <h3>Trending Now</h3>
-                            <p>Discover the hottest tracks</p>
-                        </div>
-                    </div>
-                    <div class="banner-item">
-                        <img src="https://i.ytimg.com/vi/kJQP7kiw5Fk/maxresdefault.jpg" alt="Featured">
-                        <div class="banner-text">
-                            <h3>New Releases</h3>
-                            <p>Fresh music just for you</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
             <main class="mobile-content">
                 <div id="results"><p class="loading">Loading music...</p></div>
             </main>
@@ -135,27 +123,42 @@
             </nav>
         </div>
     </div>
-    <div id="player" class="player">
-        <div class="player-info">
-            <img id="playerImg" src="" alt="">
-            <div id="playerTitle">No song playing</div>
-        </div>
-        <iframe id="playerFrame" frameborder="0" allow="autoplay; encrypted-media"></iframe>
-        <div class="player-controls">
-            <button class="expand-btn" onclick="toggleTheaterMode()">⛶</button>
-            <button class="close-btn" onclick="closePlayer()">✕</button>
-        </div>
-    </div>
-    <div id="theaterPlayer" class="theater-player">
-        <div class="theater-header">
-            <div class="theater-title"></div>
-            <div class="theater-controls">
-                <button class="minimize-btn" onclick="toggleTheaterMode()">⬇</button>
-                <button class="theater-close-btn" onclick="closePlayer()">✕</button>
+    <!-- Full Player - YouTube Style -->
+    <div id="fullPlayer" class="full-player">
+        <div class="watch-page">
+            <div class="player-section">
+                <iframe id="fullPlayerFrame" class="video-player" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+                <div class="video-info">
+                    <h1 id="fullPlayerTitle" class="video-title">Song Title</h1>
+                    <div class="video-meta">
+                        <div class="channel-info">
+                            <img id="fullPlayerImg" src="" alt="" class="channel-avatar">
+                            <div class="channel-details">
+                                <p id="fullPlayerArtist" class="channel-name">Artist Name</p>
+                            </div>
+                        </div>
+                        <div class="video-controls">
+                            <button class="control-btn" onclick="previousSong()">⏮</button>
+                            <button class="control-btn play-pause" id="playPauseBtn" onclick="togglePlayPause()">⏸</button>
+                            <button class="control-btn" onclick="nextSong()">⏭</button>
+                            <button class="close-full-player" onclick="closePlayer()">✕</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="recommendations">
+                <div class="recommended-videos">
+                    <h3>Up Next</h3>
+                    <div id="recommendedList"></div>
+                </div>
             </div>
         </div>
-        <iframe id="theaterFrame" frameborder="0" allow="autoplay; encrypted-media"></iframe>
     </div>
+    
+    <!-- WhatsApp Support Button -->
+    <a href="https://wa.me/254103024172" target="_blank" class="whatsapp-float" title="WhatsApp Support">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" width="35" height="35">
+    </a>
     <script src="/static/script.js"></script>
 </body>
 </html>

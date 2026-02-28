@@ -39,7 +39,7 @@ def test():
 def index():
     return render_template('index.html')
 
-def fetch_videos(term, max_results=30):
+def fetch_videos(term, max_results=100):
     ydl_opts = {'quiet': True, 'no_warnings': True, 'extract_flat': True, 'socket_timeout': 10}
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -66,8 +66,7 @@ def fetch_videos(term, max_results=30):
 def trending():
     print("Trending endpoint called")
     try:
-        # Simple direct fetch without threading first
-        videos = fetch_videos('music 2024', 20)
+        videos = fetch_videos('music 2024', 100)
         print(f"Fetched {len(videos)} videos")
         return jsonify(videos)
     except Exception as e:
@@ -85,12 +84,12 @@ def top():
     
     try:
         with ThreadPoolExecutor(max_workers=2) as executor:
-            futures = [executor.submit(fetch_videos, term, 30) for term in top_terms]
+            futures = [executor.submit(fetch_videos, term, 100) for term in top_terms]
             for future in as_completed(futures, timeout=25):
                 try:
                     videos = future.result()
                     for v in videos:
-                        if v['id'] not in seen and len(all_videos) < 60:
+                        if v['id'] not in seen:
                             all_videos.append(v)
                             seen.add(v['id'])
                 except Exception as e:
@@ -112,12 +111,12 @@ def foryou():
     
     try:
         with ThreadPoolExecutor(max_workers=2) as executor:
-            futures = [executor.submit(fetch_videos, genre, 30) for genre in genres]
+            futures = [executor.submit(fetch_videos, genre, 100) for genre in genres]
             for future in as_completed(futures, timeout=25):
                 try:
                     videos = future.result()
                     for v in videos:
-                        if v['id'] not in seen and len(all_videos) < 60:
+                        if v['id'] not in seen:
                             all_videos.append(v)
                             seen.add(v['id'])
                 except Exception as e:
