@@ -85,6 +85,63 @@ def foryou():
     random.shuffle(all_videos)
     return jsonify(all_videos)
 
+@app.route('/football')
+def football():
+    import random
+    football_terms = ['live football match today', 'football live stream', 'premier league live', 'champions league live', 'football highlights', 'live soccer match']
+    all_videos = []
+    seen = set()
+    
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = [executor.submit(fetch_videos, term, 30) for term in football_terms]
+        for future in as_completed(futures):
+            videos = future.result()
+            for v in videos:
+                if v['id'] not in seen and len(all_videos) < 100:
+                    all_videos.append(v)
+                    seen.add(v['id'])
+    
+    random.shuffle(all_videos)
+    return jsonify(all_videos)
+
+@app.route('/wrestling')
+def wrestling():
+    import random
+    wrestling_terms = ['wwe highlights', 'wrestling matches', 'aew wrestling', 'wrestling news']
+    all_videos = []
+    seen = set()
+    
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(fetch_videos, term, 25) for term in wrestling_terms]
+        for future in as_completed(futures):
+            videos = future.result()
+            for v in videos:
+                if v['id'] not in seen and len(all_videos) < 100:
+                    all_videos.append(v)
+                    seen.add(v['id'])
+    
+    random.shuffle(all_videos)
+    return jsonify(all_videos)
+
+@app.route('/movies')
+def movies():
+    import random
+    movie_terms = ['latest movies', 'movie trailers', 'hollywood movies', 'action movies']
+    all_videos = []
+    seen = set()
+    
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(fetch_videos, term, 25) for term in movie_terms]
+        for future in as_completed(futures):
+            videos = future.result()
+            for v in videos:
+                if v['id'] not in seen and len(all_videos) < 100:
+                    all_videos.append(v)
+                    seen.add(v['id'])
+    
+    random.shuffle(all_videos)
+    return jsonify(all_videos)
+
 @app.route('/search', methods=['POST'])
 def search():
     query = request.json.get('query')
