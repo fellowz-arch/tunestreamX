@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 DOWNLOAD_FOLDER = Path('downloads')
 DOWNLOAD_FOLDER.mkdir(exist_ok=True)
 
