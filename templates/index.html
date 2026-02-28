@@ -11,8 +11,9 @@
     <meta property="og:title" content="TuneStreamX - Stream Music Online">
     <meta property="og:description" content="Stream your favorite music online with TuneStreamX">
     <meta property="og:image" content="/static/TunestreamX logo.png">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#ff0000">
     <link rel="stylesheet" href="/static/yt-layout.css">
+    <link rel="manifest" href="/static/manifest.json">
 </head>
 <body>
     <div id="splashScreen" class="splash-screen">
@@ -160,5 +161,10 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" width="35" height="35">
     </a>
     <script src="/static/script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js');
+        }
+    </script>
 </body>
 </html>
