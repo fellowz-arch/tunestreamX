@@ -1,9 +1,8 @@
-let currentTab = 'trending';
+let currentTab = 'foryou';
 let suggestTimeout;
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
-    const content = document.getElementById('content');
     sidebar.classList.toggle('active');
 }
 
@@ -16,6 +15,11 @@ async function loadTab(tab, element) {
     
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = '<p class="loading">Loading...</p>';
+    // if sidebar is open on small screen, close it after navigation
+    if (window.innerWidth <= 768) {
+        const sb = document.getElementById('sidebar');
+        if (sb) sb.classList.remove('active');
+    }
     
     try {
         const response = await fetch(`/${tab}`);

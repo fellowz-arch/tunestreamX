@@ -53,9 +53,9 @@
                 <span class="icon">🔍</span>
                 <span class="label">Explore</span>
             </a>
-            <a class="sidebar-item" onclick="loadTab('live', this)">
-                <span class="icon">🔴</span>
-                <span class="label">Live</span>
+            <a class="sidebar-item" onclick="loadTab('shorts', this)">
+                <span class="icon">🎬</span>
+                <span class="label">Shorts</span>
             </a>
             <a class="sidebar-item" onclick="loadTab('library', this)">
                 <span class="icon">📚</span>
@@ -71,6 +71,7 @@
         <div class="main-content">
             <nav class="mobile-header">
                 <div class="mobile-header-content">
+                    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
                     <div class="logo">
                         <img src="/static/TunestreamX logo.png" alt="TuneStreamX" class="logo-img">
                         <span class="logo-text">TuneStreamX</span>
@@ -83,11 +84,7 @@
                 </div>
             </nav>
             
-            <div class="category-tabs">
-                <div class="tab active" onclick="loadTab('foryou', this)">For You</div>
-                <div class="tab" onclick="loadTab('trending', this)">Trending</div>
-                <div class="tab" onclick="loadTab('top', this)">Albums</div>
-            </div>
+            <!-- removed category tabs to match YouTube feed layout -->
             
             <div class="featured-banner">
                 <div class="banner-scroll" id="bannerScroll">
@@ -112,12 +109,7 @@
                 <div id="results"><p class="loading">Loading music...</p></div>
             </main>
             
-            <div class="recently-played">
-                <h3>Recently Played</h3>
-                <div class="horizontal-scroll" id="recentlyPlayed">
-                    <!-- Recently played items will be populated here -->
-                </div>
-            </div>
+            <!-- recently-played section removed -->
             
             <nav class="bottom-nav">
                 <div class="nav-item active" onclick="loadTab('foryou', this)">
@@ -125,16 +117,16 @@
                     <span class="label">Home</span>
                 </div>
                 <div class="nav-item" onclick="loadTab('trending', this)">
-                    <span class="icon">⚡</span>
-                    <span class="label">Trending</span>
+                    <span class="icon">🔍</span>
+                    <span class="label">Explore</span>
+                </div>
+                <div class="nav-item">
+                    <span class="icon">🎬</span>
+                    <span class="label">Shorts</span>
                 </div>
                 <div class="nav-item">
                     <span class="icon">📚</span>
                     <span class="label">Library</span>
-                </div>
-                <div class="nav-item">
-                    <span class="icon">🔍</span>
-                    <span class="label">Search</span>
                 </div>
                 <div class="nav-item">
                     <span class="icon">👤</span>

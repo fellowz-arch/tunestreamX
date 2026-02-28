@@ -160,6 +160,22 @@ def search():
         except:
             return jsonify([])
 
+# placeholder endpoints for desktop sidebar links that may not have real data yet
+@app.route('/shorts')
+def shorts():
+    # shorts/short-form content not implemented
+    return jsonify([])
+
+@app.route('/library')
+def library():
+    # user library not implemented
+    return jsonify([])
+
+@app.route('/profile')
+def profile():
+    # profile information not implemented
+    return jsonify([])
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5000))
