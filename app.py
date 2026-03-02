@@ -11,6 +11,9 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this-in-production'
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size for production
 
+# User database (in production, use a real database)
+registered_users = {}
+
 # Security decorator for admin routes
 def admin_required(f):
     @wraps(f)
@@ -349,20 +352,38 @@ button{padding:12px 24px;background:#667eea;color:white;border:none;border-radiu
     
     return render_template('admin.html')
 
-# Analytics storage with real data tracking
-analytics_data = {
-    'downloads': 0,
-    'active_installs': 0,
-    'sessions': 0,
-    'ad_views': 0,
-    'users': [],
-    'content': [],
-    'reports': [],
-    'daily_stats': {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0},
-    'views_data': {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0},
-    'revenue_sources': {'ads': 0, 'premium': 0, 'creator_fund': 0},
-    'categories': {'music': 0, 'movies': 0, 'sports': 0, 'gaming': 0, 'other': 0}
-}
+import json
+
+# Data persistence
+DATA_FILE = 'app_data.json'
+
+def load_data():
+    try:
+        if os.path.exists(DATA_FILE):
+            with open(DATA_FILE, 'r') as f:
+                return json.load(f)
+    except:
+        pass
+    return {
+        'analytics_data': {
+            'downloads': 0, 'active_installs': 0, 'sessions': 0, 'ad_views': 0, 'users': [], 'content': [], 'reports': [],
+            'daily_stats': {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0},
+            'views_data': {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0},
+            'revenue_sources': {'ads': 0, 'premium': 0, 'creator_fund': 0},
+            'categories': {'music': 0, 'movies': 0, 'sports': 0, 'gaming': 0, 'other': 0}
+        },
+        'registered_users': {}, 'ads_storage': [], 'ad_views': {}
+    }
+
+def save_data():
+    with open(DATA_FILE, 'w') as f:
+        json.dump({'analytics_data': analytics_data, 'registered_users': registered_users, 'ads_storage': ads_storage, 'ad_views': ad_views}, f)
+
+app_data = load_data()
+analytics_data = app_data['analytics_data']
+registered_users = app_data['registered_users']
+ads_storage = app_data['ads_storage']
+ad_views = app_data['ad_views']
 
 @app.route('/track/download', methods=['POST'])
 def track_download():
@@ -380,6 +401,7 @@ def track_session():
     import datetime
     day = datetime.datetime.now().strftime('%a')
     analytics_data['daily_stats'][day] += 1
+    save_data()
     return jsonify({'success': True})
 
 @app.route('/track/view', methods=['POST'])
@@ -391,6 +413,7 @@ def track_view():
     import datetime
     day = datetime.datetime.now().strftime('%a')
     analytics_data['views_data'][day] += 1
+    save_data()
     return jsonify({'success': True})
 
 @app.route('/admin/stats')
@@ -421,11 +444,17 @@ def admin_chart_data():
 
 @app.route('/admin/users')
 def admin_users():
-    return jsonify([
-        {'id': '1', 'email': 'user1@example.com', 'joined': '2024-01-15', 'status': 'active', 'videos': 12, 'views': 45000},
-        {'id': '2', 'email': 'creator@example.com', 'joined': '2024-02-01', 'status': 'active', 'videos': 89, 'views': 250000},
-        {'id': '3', 'email': 'banned@example.com', 'joined': '2024-01-20', 'status': 'banned', 'videos': 0, 'views': 0}
-    ])
+    users_list = []
+    for i, (email, user_data) in enumerate(registered_users.items()):
+        users_list.append({
+            'id': str(i + 1),
+            'email': email,
+            'joined': user_data['joined'],
+            'status': 'active',
+            'videos': user_data.get('videos', 0),
+            'views': user_data.get('views', 0)
+        })
+    return jsonify(users_list)
 
 @app.route('/admin/users/<user_id>', methods=['DELETE'])
 def delete_user_by_id(user_id):
@@ -486,9 +515,6 @@ def delete_content():
 ads_storage = []
 ad_views = {}
 
-ADS_FOLDER = Path('static/ads')
-ADS_FOLDER.mkdir(exist_ok=True)
-
 @app.route('/admin/ads')
 def admin_ads():
     return jsonify([{
@@ -520,23 +546,20 @@ def upload_ad():
         allowed_extensions = {'.mp4', '.webm', '.mov', '.avi'}
         file_ext = Path(file.filename).suffix.lower()
         if file_ext not in allowed_extensions:
-            return jsonify({'success': False, 'error': f'Invalid file type. Allowed: {allowed_extensions}'}), 400
-        
-        # Check file size (max 100MB for production)
-        if file.content_length and file.content_length > 100 * 1024 * 1024:
-            return jsonify({'success': False, 'error': 'File too large. Max 100MB allowed'}), 400
+            return jsonify({'success': False, 'error': 'Invalid file type. Use MP4, WebM, MOV, or AVI'}), 400
         
         ad_id = str(int(time.time()))
         filename = f"ad_{ad_id}{file_ext}"
         
-        # Create ads directory if it doesn't exist
-        ads_dir = Path('static/ads')
-        ads_dir.mkdir(parents=True, exist_ok=True)
+        # Ensure static/ads directory exists
+        import os
+        ads_dir = os.path.join('static', 'ads')
+        os.makedirs(ads_dir, exist_ok=True)
         
-        filepath = ads_dir / filename
+        filepath = os.path.join(ads_dir, filename)
         
         # Save file
-        file.save(str(filepath))
+        file.save(filepath)
         
         ad = {
             'id': ad_id,
@@ -547,12 +570,13 @@ def upload_ad():
         }
         ads_storage.append(ad)
         ad_views[ad_id] = 0
+        save_data()
         
-        return jsonify({'success': True, 'ad': ad})
+        return jsonify({'success': True, 'message': 'Ad uploaded successfully', 'ad': ad})
         
     except Exception as e:
-        print(f'Upload ad error: {e}')
-        return jsonify({'success': False, 'error': 'Upload failed. Try a smaller file.'}), 500
+        print(f'Upload error: {e}')
+        return jsonify({'success': False, 'error': f'Upload failed: {str(e)}'}), 500
 
 @app.route('/admin/delete-ad', methods=['POST'])
 def delete_ad():
@@ -566,7 +590,10 @@ def delete_ad():
 def get_ad():
     if ads_storage:
         ad = random.choice(ads_storage)
-        return jsonify(ad)
+        # Ensure the video file path is correct
+        ad_copy = ad.copy()
+        ad_copy['videoFile'] = ad['videoFile']
+        return jsonify(ad_copy)
     return jsonify(None)
 
 @app.route('/track-ad-view', methods=['POST'])
@@ -622,7 +649,43 @@ def creator_upload():
     data = request.json
     return jsonify({'success': True, 'message': 'Video uploaded successfully', 'videoId': 'new123'})
 
-@app.route('/send-welcome-email', methods=['POST'])
+@app.route('/auth/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+    
+    if email in registered_users and registered_users[email]['password'] == password:
+        return jsonify({'success': True, 'message': 'Login successful'})
+    else:
+        return jsonify({'success': False, 'error': 'Invalid email or password'}), 401
+
+@app.route('/auth/signup', methods=['POST'])
+def signup():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+    
+    if email in registered_users:
+        return jsonify({'success': False, 'error': 'Account already exists. Please login.'}), 400
+    
+    registered_users[email] = {
+        'password': password,
+        'joined': time.strftime('%Y-%m-%d'),
+        'videos': 0,
+        'views': 0
+    }
+    
+    analytics_data['users'].append({
+        'id': str(len(analytics_data['users']) + 1),
+        'email': email,
+        'joined': time.strftime('%Y-%m-%d'),
+        'status': 'active',
+        'videos': 0,
+        'views': 0
+    })
+    
+    return jsonify({'success': True, 'message': 'Account created successfully'})
 def send_welcome_email():
     import smtplib
     from email.mime.text import MIMEText

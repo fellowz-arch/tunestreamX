@@ -46,6 +46,7 @@ async function loadTab(tab, element) {
     }
     
     const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;"><div style="width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #667eea;border-radius:50%;animation:spin 1s linear infinite;"></div></div><style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>';
     
     if (window.innerWidth <= 768) {
         const sb = document.getElementById('sidebar');
@@ -74,7 +75,7 @@ async function loadTab(tab, element) {
 
 async function loadCategory(query) {
     const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '<p class="loading">Loading content... Please wait.</p>';
+    resultsDiv.innerHTML = '<p class="loading">🔄 Loading content... Please wait.</p>';
     
     document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
@@ -110,7 +111,7 @@ async function search() {
     
     if (!query) return;
     
-    resultsDiv.innerHTML = '<p class="loading">Searching... Please wait.</p>';
+    resultsDiv.innerHTML = '<p class="loading">🔄 Searching... Please wait.</p>';
     
     try {
         const response = await fetch('/search', {
@@ -511,7 +512,7 @@ function showSignup() {
     document.getElementById('modalFooter').innerHTML = 'Already have an account? <a href="#" onclick="showLogin()">Sign In</a>';
 }
 
-function handleAuth(event) {
+async function handleAuth(event) {
     event.preventDefault();
     const email = document.getElementById('authEmail').value;
     const password = document.getElementById('authPassword').value;
@@ -523,17 +524,34 @@ function handleAuth(event) {
         return;
     }
     
-    localStorage.setItem('userEmail', email);
-    localStorage.setItem('isLoggedIn', 'true');
-    
-    closeLoginModal();
-    updateProfileButton(email);
-    
-    if (isSignup) {
-        sendWelcomeEmail(email);
-        showWelcomeModal();
-    } else {
-        alert('Login successful!');
+    try {
+        const endpoint = isSignup ? '/auth/signup' : '/auth/login';
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email, password})
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('isLoggedIn', 'true');
+            
+            closeLoginModal();
+            updateProfileButton(email);
+            
+            if (isSignup) {
+                sendWelcomeEmail(email);
+                showWelcomeModal();
+            } else {
+                alert('Login successful!');
+            }
+        } else {
+            alert(result.error);
+        }
+    } catch (error) {
+        alert('Authentication failed. Please try again.');
     }
 }
 
@@ -698,7 +716,15 @@ function showAdPlayer(adVideoFile, adClickUrl, adId, mainVideoId) {
     adVideo.style.cssText = 'width: 100%; height: 100%; object-fit: contain;';
     adVideo.src = adVideoFile;
     adVideo.autoplay = true;
+    adVideo.muted = true; // Add muted for autoplay to work
     adVideo.controls = false;
+    
+    // Add error handling
+    adVideo.onerror = () => {
+        console.error('Ad video failed to load:', adVideoFile);
+        adOverlay.remove();
+        playMainVideo(mainVideoId);
+    };
     
     const adLabel = document.createElement('div');
     adLabel.style.cssText = 'position: absolute; top: 20px; left: 20px; background: #f59e0b; color: white; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 14px; z-index: 11;';
