@@ -9,7 +9,7 @@ from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this-in-production'
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size for production
 
 # Security decorator for admin routes
 def admin_required(f):
@@ -327,6 +327,26 @@ def profile():
 # Super Admin Panel (Secure)
 @app.route('/admin')
 def admin():
+    password = request.args.get('password')
+    if password == '9771':
+        session['admin_authenticated'] = True
+    
+    if not session.get('admin_authenticated'):
+        return '''<!DOCTYPE html>
+<html><head><title>Admin Login</title><style>
+body{font-family:Arial;background:#667eea;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+.login{background:white;padding:40px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.3);text-align:center}
+input{padding:12px;margin:10px;border:1px solid #ddd;border-radius:6px;width:200px}
+button{padding:12px 24px;background:#667eea;color:white;border:none;border-radius:6px;cursor:pointer}
+</style></head><body>
+<div class="login">
+<h2>🎵 TuneStreamX Admin</h2>
+<form method="GET">
+<input type="password" name="password" placeholder="Enter admin password" required>
+<br><button type="submit">Login</button>
+</form>
+</div></body></html>'''
+    
     return render_template('admin.html')
 
 # Analytics storage with real data tracking
@@ -502,9 +522,18 @@ def upload_ad():
         if file_ext not in allowed_extensions:
             return jsonify({'success': False, 'error': f'Invalid file type. Allowed: {allowed_extensions}'}), 400
         
+        # Check file size (max 100MB for production)
+        if file.content_length and file.content_length > 100 * 1024 * 1024:
+            return jsonify({'success': False, 'error': 'File too large. Max 100MB allowed'}), 400
+        
         ad_id = str(int(time.time()))
         filename = f"ad_{ad_id}{file_ext}"
-        filepath = ADS_FOLDER / filename
+        
+        # Create ads directory if it doesn't exist
+        ads_dir = Path('static/ads')
+        ads_dir.mkdir(parents=True, exist_ok=True)
+        
+        filepath = ads_dir / filename
         
         # Save file
         file.save(str(filepath))
@@ -523,9 +552,7 @@ def upload_ad():
         
     except Exception as e:
         print(f'Upload ad error: {e}')
-        import traceback
-        traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'Upload failed. Try a smaller file.'}), 500
 
 @app.route('/admin/delete-ad', methods=['POST'])
 def delete_ad():
