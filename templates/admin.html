@@ -165,6 +165,14 @@
                 <h2>Super Admin Dashboard</h2>
                 <div class="stats-grid">
                     <div class="stat-card">
+                        <h3>Total Downloads</h3>
+                        <div class="value" id="totalDownloads">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Installs</h3>
+                        <div class="value" id="activeInstalls">0</div>
+                    </div>
+                    <div class="stat-card">
                         <h3>Total Users</h3>
                         <div class="value" id="totalUsers">0</div>
                     </div>
@@ -181,16 +189,12 @@
                         <div class="value" id="totalViews">0</div>
                     </div>
                     <div class="stat-card">
+                        <h3>Ad Views</h3>
+                        <div class="value" id="adViews">0</div>
+                    </div>
+                    <div class="stat-card">
                         <h3>Total Revenue</h3>
                         <div class="value" id="totalRevenue">$0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Reported Content</h3>
-                        <div class="value" id="reportedContent">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Banned Users</h3>
-                        <div class="value" id="bannedUsers">0</div>
                     </div>
                 </div>
             </div>
@@ -237,6 +241,9 @@
                         <div>
                             <button type="button" onclick="uploadAd()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; margin-right: 8px;">Upload</button>
                             <button type="button" onclick="hideUploadAdForm()" style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+                        </div>
+                    </form>
+                </div>dius: 6px; cursor: pointer;">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -418,13 +425,14 @@
             try {
                 const response = await fetch('/admin/stats');
                 const data = await response.json();
+                document.getElementById('totalDownloads').textContent = data.totalDownloads || 0;
+                document.getElementById('activeInstalls').textContent = data.activeInstalls || 0;
                 document.getElementById('totalUsers').textContent = data.totalUsers || 0;
                 document.getElementById('activeSessions').textContent = data.activeSessions || 0;
                 document.getElementById('totalVideos').textContent = data.totalVideos || 0;
                 document.getElementById('totalViews').textContent = data.totalViews?.toLocaleString() || 0;
+                document.getElementById('adViews').textContent = data.adViews?.toLocaleString() || 0;
                 document.getElementById('totalRevenue').textContent = '$' + (data.totalRevenue?.toLocaleString() || 0);
-                document.getElementById('reportedContent').textContent = data.reportedContent || 0;
-                document.getElementById('bannedUsers').textContent = data.bannedUsers || 0;
             } catch (error) {
                 console.error('Failed to load stats:', error);
             }
@@ -587,10 +595,19 @@
                 return;
             }
             
+            if (videoFile.size > 500 * 1024 * 1024) {
+                alert('Video file is too large. Maximum size is 500MB');
+                return;
+            }
+            
             const formData = new FormData();
             formData.append('title', title);
             formData.append('videoFile', videoFile);
             formData.append('clickUrl', clickUrl);
+            
+            const uploadBtn = event.target;
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
             
             try {
                 const response = await fetch('/admin/upload-ad', {
@@ -598,12 +615,9 @@
                     body: formData
                 });
                 
-                if (!response.ok) {
-                    throw new Error('Upload failed');
-                }
-                
                 const data = await response.json();
-                if (data.success) {
+                
+                if (response.ok && data.success) {
                     alert('Ad uploaded successfully!');
                     hideUploadAdForm();
                     loadAds();
@@ -612,7 +626,10 @@
                 }
             } catch (error) {
                 console.error('Upload error:', error);
-                alert('Failed to upload ad. Please check the console for details.');
+                alert('Failed to upload ad: ' + error.message);
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload';
             }
         }
         
