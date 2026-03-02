@@ -46,7 +46,6 @@ async function loadTab(tab, element) {
     }
     
     const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '<p class="loading">Loading...</p>';
     
     if (window.innerWidth <= 768) {
         const sb = document.getElementById('sidebar');
@@ -55,17 +54,27 @@ async function loadTab(tab, element) {
     
     try {
         const response = await fetch(`/${tab}`);
+        
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        
         const videos = await response.json();
-        displayResults(videos);
+        
+        if (!videos || videos.length === 0) {
+            resultsDiv.innerHTML = '<p class="loading">No content available. Try again later.</p>';
+        } else {
+            displayResults(videos);
+        }
     } catch (error) {
         console.error('Error loading tab:', error);
-        resultsDiv.innerHTML = '<p class="loading">Error loading content. Please try again.</p>';
+        resultsDiv.innerHTML = '<p class="loading">Failed to load content. Please refresh the page.</p>';
     }
 }
 
 async function loadCategory(query) {
     const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '<p class="loading">Loading...</p>';
+    resultsDiv.innerHTML = '<p class="loading">Loading content... Please wait.</p>';
     
     document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
@@ -77,15 +86,20 @@ async function loadCategory(query) {
             body: JSON.stringify({query})
         });
         
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        
         const videos = await response.json();
+        
         if (!videos || videos.length === 0) {
-            resultsDiv.innerHTML = '<p class="loading">No content found for this category.</p>';
+            resultsDiv.innerHTML = '<p class="loading">No content found for this category. Try another one.</p>';
         } else {
             displayResults(videos);
         }
     } catch (error) {
         console.error('Category error:', error);
-        resultsDiv.innerHTML = '<p class="loading">Error loading category. Please try again.</p>';
+        resultsDiv.innerHTML = '<p class="loading">Failed to load category. Please try again.</p>';
     }
 }
 
@@ -96,7 +110,7 @@ async function search() {
     
     if (!query) return;
     
-    resultsDiv.innerHTML = '<p class="loading">Searching...</p>';
+    resultsDiv.innerHTML = '<p class="loading">Searching... Please wait.</p>';
     
     try {
         const response = await fetch('/search', {
@@ -105,8 +119,17 @@ async function search() {
             body: JSON.stringify({query})
         });
         
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        
         const videos = await response.json();
-        displayResults(videos);
+        
+        if (!videos || videos.length === 0) {
+            resultsDiv.innerHTML = '<p class="loading">No results found. Try different keywords.</p>';
+        } else {
+            displayResults(videos);
+        }
     } catch (error) {
         console.error('Search error:', error);
         resultsDiv.innerHTML = '<p class="loading">Search failed. Please try again.</p>';
@@ -118,7 +141,7 @@ function displayResults(videos) {
     resultsDiv.innerHTML = '';
     
     if (!videos || videos.length === 0) {
-        resultsDiv.innerHTML = '<p class="loading">No songs found.</p>';
+        resultsDiv.innerHTML = '<p class="loading">No content available at the moment.</p>';
         return;
     }
     
@@ -160,6 +183,10 @@ function playAudio(videoId, title, thumbnail) {
     currentThumbnail = thumbnail;
     currentArtist = 'Unknown Artist';
     isPlaying = true;
+    
+    // Track view with category
+    const category = getCurrentCategory();
+    trackView(category);
     
     const fullPlayer = document.getElementById('fullPlayer');
     const fullPlayerImg = document.getElementById('fullPlayerImg');
@@ -563,7 +590,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
-window.onload = function() {
+window.onload = () => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
         document.body.classList.add('light');
@@ -577,16 +604,65 @@ window.onload = function() {
         updateProfileButton(userEmail);
     }
     
+    // Track session
+    trackSession();
+    
+    // Track install if first time
+    if (!localStorage.getItem('appInstalled')) {
+        trackInstall();
+        localStorage.setItem('appInstalled', 'true');
+    }
+    
+    initializeSearch();
+    loadTab('foryou');
+    
     setTimeout(() => {
         const splashScreen = document.getElementById('splashScreen');
         const mainApp = document.getElementById('mainApp');
         if (splashScreen) splashScreen.style.display = 'none';
         if (mainApp) mainApp.style.display = 'block';
-        
-        initializeSearch();
-        loadTab('foryou');
-    }, 3000);
+    }, 5000);
 };
+
+async function trackSession() {
+    try {
+        await fetch('/track/session', { method: 'POST' });
+    } catch (e) {
+        console.log('Session tracking failed');
+    }
+}
+
+async function trackInstall() {
+    try {
+        await fetch('/track/install', { method: 'POST' });
+    } catch (e) {
+        console.log('Install tracking failed');
+    }
+}
+
+async function trackView(category) {
+    try {
+        await fetch('/track/view', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({category})
+        });
+    } catch (e) {
+        console.log('View tracking failed');
+    }
+}
+
+function getCurrentCategory() {
+    switch(currentTab) {
+        case 'football': return 'sports';
+        case 'movies': return 'movies';
+        case 'wrestling': return 'sports';
+        case 'foryou':
+        case 'trending':
+        case 'top':
+        default: return 'music';
+    }
+}
 
 
 async function showAdBeforeVideo(videoId) {

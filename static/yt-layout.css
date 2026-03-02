@@ -409,13 +409,12 @@ body {
 
 .player-section {
     flex: 1;
-    max-width: calc(100% - 426px);
+    max-width: 100%;
 }
 
 .video-player {
     width: 100%;
-    max-height: 60vh;
-    aspect-ratio: 16/9;
+    height: 70vh;
     background: black;
     border-radius: 12px;
 }
@@ -716,7 +715,7 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    animation: fadeOut 0.5s ease-in-out 2.5s forwards;
+    animation: fadeOut 0.5s ease-in-out 4.5s forwards;
 }
 
 .splash-content {
