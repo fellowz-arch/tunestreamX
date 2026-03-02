@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - TuneStreamX</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+        }
+        
+        .admin-header {
+            background: #181818;
+            padding: 20px;
+            border-bottom: 1px solid #303030;
+        }
+        
+        .admin-header h1 {
+            font-size: 24px;
+        }
+        
+        .admin-container {
+            display: flex;
+            min-height: calc(100vh - 81px);
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background: #181818;
+            padding: 20px;
+            border-right: 1px solid #303030;
+        }
+        
+        .admin-menu-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        
+        .admin-menu-item:hover {
+            background: #272727;
+        }
+        
+        .admin-menu-item.active {
+            background: #ff0000;
+        }
+        
+        .admin-content {
+            flex: 1;
+            padding: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #181818;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #303030;
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff0000;
+        }
+        
+        .data-table {
+            background: #181818;
+            border-radius: 12px;
+            border: 1px solid #303030;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #303030;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid #303030;
+        }
+        
+        th {
+            color: #aaa;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+        
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1>🎵 TuneStreamX Admin Panel</h1>
+    </div>
+    
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <div class="admin-menu-item active" onclick="showSection('dashboard')">📊 Dashboard</div>
+            <div class="admin-menu-item" onclick="showSection('users')">👥 User Management</div>
+            <div class="admin-menu-item" onclick="showSection('ads')">📺 Ads Management</div>
+            <div class="admin-menu-item" onclick="showSection('content')">🎵 Content Moderation</div>
+            <div class="admin-menu-item" onclick="showSection('reports')">⚠️ Reports</div>
+            <div class="admin-menu-item" onclick="showSection('analytics')">📈 Site Analytics</div>
+            <div class="admin-menu-item" onclick="showSection('revenue')">💰 Revenue</div>
+            <div class="admin-menu-item" onclick="showSection('settings')">⚙️ System Settings</div>
+        </div>
+        
+        <div class="admin-content">
+            <div id="dashboard" class="section active">
+                <h2>Super Admin Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <div class="value" id="totalUsers">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Sessions</h3>
+                        <div class="value" id="activeSessions">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Videos</h3>
+                        <div class="value" id="totalVideos">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Views</h3>
+                        <div class="value" id="totalViews">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <div class="value" id="totalRevenue">$0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Reported Content</h3>
+                        <div class="value" id="reportedContent">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Banned Users</h3>
+                        <div class="value" id="bannedUsers">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="users" class="section">
+                <h2>User Management</h2>
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3>All Users</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Joined</th>
+                                <th>Status</th>
+                                <th>Videos</th>
+                                <th>Views</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #aaa;">Loading users...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="ads" class="section">
+                <h2>Ads Management</h2>
+                <div style="margin-bottom: 20px;">
+                    <button onclick="showUploadAdForm()" style="padding: 12px 24px; background: #ff0000; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">+ Upload New Ad</button>
+                </div>
+                
+                <div id="uploadAdForm" style="display: none; background: #181818; padding: 24px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #303030;">
+                    <h3 style="margin-bottom: 16px;">Upload New Ad</h3>
+                    <form id="adUploadForm" enctype="multipart/form-data">
+                        <input type="text" id="adTitle" placeholder="Ad Title" style="width: 100%; padding: 12px; margin-bottom: 12px; background: #0f0f0f; border: 1px solid #303030; border-radius: 8px; color: #fff;" required>
+                        <input type="file" id="adVideoFile" accept="video/mp4,video/webm" style="width: 100%; padding: 12px; margin-bottom: 12px; background: #0f0f0f; border: 1px solid #303030; border-radius: 8px; color: #fff;" required>
+                        <input type="url" id="adClickUrl" placeholder="Click URL (e.g., https://example.com)" style="width: 100%; padding: 12px; margin-bottom: 12px; background: #0f0f0f; border: 1px solid #303030; border-radius: 8px; color: #fff;">
+                        <p style="color: #aaa; font-size: 12px; margin-bottom: 12px;">Upload HD video (MP4/WebM) and add a clickable link for users</p>
+                        <div>
+                            <button type="button" onclick="uploadAd()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; margin-right: 8px;">Upload</button>
+                            <button type="button" onclick="hideUploadAdForm()" style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3>Active Ads</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Video File</th>
+                                <th>Click URL</th>
+                                <th>Views</th>
+                                <th>Uploaded</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adsTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #aaa;">No ads uploaded yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="content" class="section">
+                <h2>Content Moderation</h2>
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3>All Content</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Views</th>
+                                <th>Status</th>
+                                <th>Reports</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contentTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #aaa;">Loading content...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="reports" class="section">
+                <h2>Content Reports</h2>
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3>User Reports</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Content ID</th>
+                                <th>Reason</th>
+                                <th>Reporter</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #aaa;">Loading reports...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="revenue" class="section">
+                <h2>Revenue Management</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <div class="value">$12,450</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>This Month</h3>
+                        <div class="value">$2,340</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Creator Payouts</h3>
+                        <div class="value">$8,900</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Platform Fee</h3>
+                        <div class="value">$3,550</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="analytics" class="section">
+                <h2>Site Analytics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Today's Views</h3>
+                        <div class="value">45,230</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>New Users Today</h3>
+                        <div class="value">127</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg. Session Time</h3>
+                        <div class="value">12m</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Popular Category</h3>
+                        <div class="value" style="font-size: 20px;">Music</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Server Uptime</h3>
+                        <div class="value" style="font-size: 20px;">99.9%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Storage Used</h3>
+                        <div class="value" style="font-size: 20px;">2.4TB</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="settings" class="section">
+                <h2>System Settings</h2>
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3>Platform Configuration</h3>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #fff; margin-bottom: 10px;">Content Policies</h4>
+                            <p style="color: #aaa;">• Max video length: 10 minutes</p>
+                            <p style="color: #aaa;">• Max file size: 500MB</p>
+                            <p style="color: #aaa;">• Auto-moderation: Enabled</p>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #fff; margin-bottom: 10px;">Monetization</h4>
+                            <p style="color: #aaa;">• Creator revenue share: 70%</p>
+                            <p style="color: #aaa;">• Platform fee: 30%</p>
+                            <p style="color: #aaa;">• Minimum payout: $100</p>
+                        </div>
+                        <div>
+                            <h4 style="color: #fff; margin-bottom: 10px;">Security</h4>
+                            <p style="color: #aaa;">• Two-factor auth: Required for creators</p>
+                            <p style="color: #aaa;">• Content encryption: AES-256</p>
+                            <p style="color: #aaa;">• Backup frequency: Daily</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.admin-menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (sectionId === 'dashboard') loadDashboard();
+            if (sectionId === 'users') loadUsers();
+            if (sectionId === 'ads') loadAds();
+            if (sectionId === 'content') loadContent();
+            if (sectionId === 'reports') loadReports();
+        }
+        
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/admin/stats');
+                const data = await response.json();
+                document.getElementById('totalUsers').textContent = data.totalUsers || 0;
+                document.getElementById('activeSessions').textContent = data.activeSessions || 0;
+                document.getElementById('totalVideos').textContent = data.totalVideos || 0;
+                document.getElementById('totalViews').textContent = data.totalViews?.toLocaleString() || 0;
+                document.getElementById('totalRevenue').textContent = '$' + (data.totalRevenue?.toLocaleString() || 0);
+                document.getElementById('reportedContent').textContent = data.reportedContent || 0;
+                document.getElementById('bannedUsers').textContent = data.bannedUsers || 0;
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+        
+        async function loadUsers() {
+            try {
+                const response = await fetch('/admin/users');
+                const users = await response.json();
+                const tbody = document.getElementById('usersTable');
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #aaa;">No users yet</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.email}</td>
+                        <td>${user.joined}</td>
+                        <td><span style="color: ${user.status === 'Banned' ? '#ef4444' : user.status === 'Creator' ? '#10b981' : '#3b82f6'}">${user.status}</span></td>
+                        <td>${user.videos}</td>
+                        <td>${user.views?.toLocaleString()}</td>
+                        <td>
+                            <button class="action-btn btn-edit">Edit</button>
+                            ${user.status !== 'Banned' ? `<button class="action-btn btn-delete" onclick="banUser('${user.email}')">Ban</button>` : ''}
+                            <button class="action-btn btn-delete" onclick="deleteUser('${user.email}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load users:', error);
+            }
+        }
+        
+        async function loadContent() {
+            try {
+                const response = await fetch('/admin/content');
+                const content = await response.json();
+                const tbody = document.getElementById('contentTable');
+                
+                if (content.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #aaa;">No content yet</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = content.map(item => `
+                    <tr>
+                        <td>${item.title}</td>
+                        <td>${item.category}</td>
+                        <td>${item.views?.toLocaleString()}</td>
+                        <td><span style="color: ${item.status === 'Under Review' ? '#f59e0b' : '#10b981'}">${item.status}</span></td>
+                        <td><span style="color: ${item.reports > 0 ? '#ef4444' : '#10b981'}">${item.reports}</span></td>
+                        <td>
+                            <button class="action-btn btn-edit">Review</button>
+                            <button class="action-btn btn-delete" onclick="deleteContent('${item.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load content:', error);
+            }
+        }
+        
+        async function loadReports() {
+            try {
+                const response = await fetch('/admin/reports');
+                const reports = await response.json();
+                const tbody = document.getElementById('reportsTable');
+                
+                if (reports.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #aaa;">No reports</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = reports.map(report => `
+                    <tr>
+                        <td>${report.contentId}</td>
+                        <td>${report.reason}</td>
+                        <td>${report.reporter}</td>
+                        <td>${report.date}</td>
+                        <td><span style="color: ${report.status === 'Pending' ? '#f59e0b' : '#10b981'}">${report.status}</span></td>
+                        <td>
+                            <button class="action-btn btn-edit">Review</button>
+                            <button class="action-btn btn-delete">Resolve</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load reports:', error);
+            }
+        }
+        
+        function deleteUser(email) {
+            if (confirm(`Delete user ${email}? This action cannot be undone.`)) {
+                fetch('/admin/delete-user', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email})
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        loadUsers();
+                    }
+                });
+            }
+        }
+        
+        function banUser(email) {
+            if (confirm(`Ban user ${email}?`)) {
+                fetch('/admin/ban-user', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email})
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        loadUsers();
+                    }
+                });
+            }
+        }
+        
+        function deleteContent(contentId) {
+            if (confirm(`Delete content ${contentId}? This action cannot be undone.`)) {
+                fetch('/admin/delete-content', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({contentId})
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        loadContent();
+                    }
+                });
+            }
+        }
+        
+        function showUploadAdForm() {
+            document.getElementById('uploadAdForm').style.display = 'block';
+        }
+        
+        function hideUploadAdForm() {
+            document.getElementById('uploadAdForm').style.display = 'none';
+            document.getElementById('adTitle').value = '';
+            document.getElementById('adVideoFile').value = '';
+            document.getElementById('adClickUrl').value = '';
+        }
+        
+        async function uploadAd() {
+            const title = document.getElementById('adTitle').value.trim();
+            const videoFile = document.getElementById('adVideoFile').files[0];
+            const clickUrl = document.getElementById('adClickUrl').value.trim();
+            
+            if (!title || !videoFile) {
+                alert('Please provide ad title and video file');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('videoFile', videoFile);
+            formData.append('clickUrl', clickUrl);
+            
+            try {
+                const response = await fetch('/admin/upload-ad', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Ad uploaded successfully!');
+                    hideUploadAdForm();
+                    loadAds();
+                } else {
+                    alert('Failed to upload ad: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Failed to upload ad. Please check the console for details.');
+            }
+        }
+        
+        async function loadAds() {
+            try {
+                const response = await fetch('/admin/ads');
+                const ads = await response.json();
+                const tbody = document.getElementById('adsTable');
+                
+                if (ads.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #aaa;">No ads uploaded yet</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = ads.map(ad => `
+                    <tr>
+                        <td>${ad.title}</td>
+                        <td><a href="${ad.videoFile}" target="_blank" style="color: #3b82f6;">View Video</a></td>
+                        <td>${ad.clickUrl ? `<a href="${ad.clickUrl}" target="_blank" style="color: #3b82f6;">${ad.clickUrl}</a>` : 'N/A'}</td>
+                        <td>${ad.views}</td>
+                        <td>${ad.uploaded}</td>
+                        <td>
+                            <button class="action-btn btn-delete" onclick="deleteAd('${ad.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load ads:', error);
+            }
+        }
+        
+        function deleteAd(adId) {
+            if (confirm('Delete this ad?')) {
+                fetch('/admin/delete-ad', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({adId})
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Ad deleted successfully');
+                        loadAds();
+                    }
+                });
+            }
+        }
+        
+        loadDashboard();
+    </script>
+</body>
+</html>

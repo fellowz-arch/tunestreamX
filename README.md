@@ -1,40 +1,63 @@
-# 🎵 TuneStreamX
+# TuneStreamX 🎵
 
-**Stream It. Feel It. Enjoy It.**
+A modern music and video streaming platform with YouTube-style interface, featuring music, sports, movies, and more.
 
-A modern, Spotify-like music streaming web application built with Flask and yt-dlp. Discover, stream, and enjoy 1800+ songs across trending hits, top charts, and personalized recommendations.
+## Features
 
-## ✨ Features
+### 🎵 Content Streaming
+- Music streaming with trending, top hits, and personalized recommendations
+- Football highlights and live matches
+- Wrestling events (WWE, WrestleMania, SmackDown)
+- Movie trailers and full HD content
 
-- 🎧 **Stream Music** - Instant playback with YouTube embed player
-- 🔥 **Trending** - 600 viral songs and chart toppers
-- 🏆 **Top Charts** - 600 songs from Billboard, Spotify, Apple Music
-- 💖 **For You** - 600 personalized songs across 12 genres
-- 🔍 **Smart Search** - Find any song with autocomplete suggestions
-- 🎭 **Theater Mode** - Full-screen streaming experience
-- 🌓 **Dark/Light Theme** - Toggle between themes
-- 👁️ **View Counts** - See song popularity
-- ❤️ **Like System** - Save your favorite tracks
-- 📱 **Responsive Design** - Works on all devices
-- 💬 **WhatsApp Support** - Direct support contact
+### 🎨 User Interface
+- YouTube-style layout with dark/light theme toggle
+- Responsive design for mobile and desktop
+- Auto-hiding video navigation controls
+- Search with intelligent suggestions
+- Related videos sidebar
+- Auto-scrolling comments section
 
-## 🚀 Quick Start
+### 📺 Video Player
+- HD video playback
+- Previous/Next navigation buttons
+- Auto-hide controls (3-second timeout)
+- Related videos recommendations
+- AI-generated comments with auto-scroll
 
-### Prerequisites
-- Python 3.11+
-- pip
+### 💰 Ads System
+- Pre-roll video ads (5-second skip timer)
+- HD video ad playback
+- Clickable "Learn More" buttons with custom URLs
+- Ad view tracking
+- Admin panel for ad management
 
-### Installation
+### 👤 Authentication
+- Email/Password signup and login
+- Google OAuth integration
+- Apple ID integration
+- GitHub OAuth integration
+- Automated welcome emails
+
+### 🛡️ Admin Panel
+- User management (view, ban, delete)
+- Content moderation
+- Ad management (upload, delete, track views)
+- Reports and analytics
+- Revenue tracking
+- System statistics dashboard
+
+## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/fellowz-arch/tunestreamX.git
-cd tunestreamX
+git clone https://github.com/yourusername/TuneStreamX.git
+cd TuneStreamX
 ```
 
 2. Install dependencies:
 ```bash
-pip install -r requirements.txt
+pip install flask yt-dlp
 ```
 
 3. Run the application:
@@ -42,115 +65,98 @@ pip install -r requirements.txt
 python app.py
 ```
 
-4. Open your browser and visit:
+4. Open your browser and navigate to:
 ```
 http://localhost:5000
 ```
 
-## 📦 Dependencies
+## Admin Panel Access
 
-- Flask - Web framework
-- yt-dlp - YouTube data extraction
-- concurrent.futures - Parallel processing
+Access the admin panel at:
+```
+http://localhost:5000/admin
+```
 
-## 🎨 Tech Stack
+## Project Structure
 
-- **Backend**: Python, Flask
+```
+TuneStreamX/
+├── app.py                 # Main Flask application
+├── templates/
+│   ├── index.html        # Main app interface
+│   ├── admin.html        # Admin panel
+│   └── creator.html      # Creator dashboard
+├── static/
+│   ├── script.js         # Main JavaScript
+│   ├── yt-layout.css     # Styles
+│   ├── ads/              # Uploaded ad videos
+│   └── logo files        # App logos
+└── README.md
+```
+
+## Technologies Used
+
+- **Backend**: Flask (Python)
+- **Video Extraction**: yt-dlp
 - **Frontend**: HTML5, CSS3, JavaScript
-- **API**: YouTube Data via yt-dlp
-- **Styling**: Custom CSS with dark/light themes
-- **Performance**: ThreadPoolExecutor for parallel API calls
+- **Email**: SMTP (Gmail)
+- **Storage**: File system (ads)
 
-## 🌟 Key Features Explained
+## Features in Detail
 
-### Music Discovery
-- **1800+ Songs** loaded across all tabs
-- **10-12 parallel API calls** for fast loading
-- **Smart deduplication** ensures unique tracks
-- **Genre diversity** from Pop to Jazz
+### Video Categories
+- **For You**: Personalized mix of pop, hip hop, rock, and EDM
+- **Trending**: Latest trending music
+- **Top Music**: Best and viral songs
+- **Football**: Live matches, highlights, league content
+- **Wrestling**: WWE events and highlights
+- **Movies**: Trailers, DJ Afro, animations, full HD movies
 
-### Streaming Experience
-- **Instant playback** with YouTube embed
-- **Theater mode** for immersive viewing
-- **Bottom player bar** for continuous listening
-- **Expand/minimize controls**
+### Ad Management
+- Upload video files (MP4/WebM)
+- Add clickable URLs for ads
+- Track ad impressions
+- 5-second countdown before skip
+- HD video quality
 
-### User Interface
-- **7-column grid** on large screens
-- **Responsive layout** adapts to all devices
-- **Smooth animations** and hover effects
-- **Loading indicators** for better UX
+### Mobile Optimization
+- Responsive layout
+- Touch-friendly controls
+- Bottom navigation bar
+- Optimized video player
+- Hidden comments on mobile
 
-## 📱 Deployment
+## Configuration
 
-### Render
-1. Push code to GitHub
-2. Connect repository to Render
-3. Set build command: `pip install -r requirements.txt`
-4. Set start command: `python app.py`
+### Email Setup
+Update the email credentials in `app.py`:
+```python
+sender_email = 'your-email@gmail.com'
+sender_password = 'your-app-password'
+```
 
-### Railway
-1. Connect GitHub repository
-2. Auto-deploys on push
-3. No configuration needed
+### Secret Key
+Change the secret key in production:
+```python
+app.secret_key = 'your-secret-key-change-this-in-production'
+```
 
-### Vercel
-1. Import GitHub repository
-2. Uses `vercel.json` configuration
-3. Automatic deployment
-
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
 This project is open source and available under the MIT License.
 
-## 👨‍💻 Developer
+## Support
 
-Created by **fellowz-arch**
+For support, contact via WhatsApp: +254103024172
 
-## 📞 Support
+## Author
 
-For support, contact via WhatsApp: +233103024172
-
-## 🎯 Roadmap
-
-- [ ] User authentication
-- [ ] Playlist creation
-- [ ] Download functionality (local only)
-- [ ] Social sharing
-- [ ] Advanced search filters
-- [ ] Recently played history
-
-## ⚡ Performance
-
-- **Lightning fast**: 1800 songs load in under 10 seconds
-- **Optimized API calls**: 1-second timeout per request
-- **Parallel processing**: Up to 12 concurrent workers
-- **Smart caching**: Prevents duplicate API calls
-
-## 🎵 Music Categories
-
-### Trending (600 songs)
-- Viral songs 2024
-- Chart toppers
-- Popular music
-- Hot songs
-
-### Top (600 songs)
-- Billboard Hot 100
-- Spotify Top 50
-- Apple Music Charts
-- YouTube Trending
-
-### For You (600 songs)
-- Pop, Hip Hop, Rock
-- Electronic, R&B, Country
-- Indie, Latin, Jazz
-- Reggae, Folk, Blues
+Created with ❤️ by FELLOWZ_JNR TECH
 
 ---
 
-**Made with ❤️ by fellowz-arch**
+**Stream It. Feel It. Enjoy It.** 🎵
