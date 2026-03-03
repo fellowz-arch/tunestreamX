@@ -502,6 +502,7 @@ def dismiss_report(report_id):
 def delete_ad_by_id(ad_id):
     global ads_storage
     ads_storage = [ad for ad in ads_storage if ad['id'] != ad_id]
+    save_data()
     return jsonify({'success': True, 'message': f'Ad {ad_id} deleted'})
 
 @app.route('/admin/delete-user', methods=['POST'])
@@ -596,6 +597,7 @@ def delete_ad():
     ad_id = data.get('adId')
     global ads_storage
     ads_storage = [ad for ad in ads_storage if ad['id'] != ad_id]
+    save_data()
     return jsonify({'success': True})
 
 @app.route('/get-ad')
