@@ -716,7 +716,7 @@ function showAdPlayer(adVideoFile, adClickUrl, adId, mainVideoId) {
     adVideo.style.cssText = 'width: 100%; height: 100%; object-fit: contain;';
     adVideo.src = adVideoFile;
     adVideo.autoplay = true;
-    adVideo.muted = true;
+    adVideo.muted = false;
     adVideo.controls = false;
     adVideo.preload = 'auto';
     
