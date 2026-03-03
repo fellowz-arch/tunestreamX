@@ -680,14 +680,7 @@ window.onload = () => {
         updateProfileButton(userEmail);
     }
     
-    // Track session
     trackSession();
-    
-    // Track install if first time
-    if (!localStorage.getItem('appInstalled')) {
-        trackInstall();
-        localStorage.setItem('appInstalled', 'true');
-    }
     
     initializeSearch();
     loadTab('foryou');

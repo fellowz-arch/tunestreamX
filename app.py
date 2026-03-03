@@ -396,11 +396,13 @@ ad_views = app_data['ad_views']
 @app.route('/track/download', methods=['POST'])
 def track_download():
     analytics_data['downloads'] += 1
+    save_data()
     return jsonify({'success': True})
 
 @app.route('/track/install', methods=['POST'])
 def track_install():
     analytics_data['active_installs'] += 1
+    save_data()
     return jsonify({'success': True})
 
 @app.route('/track/session', methods=['POST'])

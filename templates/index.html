@@ -280,20 +280,32 @@
         }
         
         let deferredPrompt;
+        let installShown = false;
+        
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             console.log('Install prompt ready');
-            
-            // Show install button after 3 seconds
-            setTimeout(() => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        deferredPrompt = null;
-                    });
-                }
-            }, 3000);
+        });
+        
+        window.addEventListener('appinstalled', () => {
+            console.log('App installed');
+            fetch('/track/install', { method: 'POST' });
+        });
+        
+        // Show install prompt after splash screen
+        setTimeout(() => {
+            if (deferredPrompt && !installShown) {
+                installShown = true;
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted install');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }, 5000);
         });
     </script>
 </body>
