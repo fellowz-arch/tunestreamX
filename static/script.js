@@ -716,14 +716,19 @@ function showAdPlayer(adVideoFile, adClickUrl, adId, mainVideoId) {
     adVideo.style.cssText = 'width: 100%; height: 100%; object-fit: contain;';
     adVideo.src = adVideoFile;
     adVideo.autoplay = true;
-    adVideo.muted = true; // Add muted for autoplay to work
+    adVideo.muted = true;
     adVideo.controls = false;
+    adVideo.preload = 'auto';
     
-    // Add error handling
     adVideo.onerror = () => {
         console.error('Ad video failed to load:', adVideoFile);
         adOverlay.remove();
         playMainVideo(mainVideoId);
+    };
+    
+    // Force play after load
+    adVideo.onloadeddata = () => {
+        adVideo.play().catch(e => console.error('Autoplay failed:', e));
     };
     
     const adLabel = document.createElement('div');
