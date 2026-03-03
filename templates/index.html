@@ -49,7 +49,16 @@
                 <div id="suggestions" class="suggestions"></div>
             </div>
             <div class="header-right">
-                <button class="icon-btn" onclick="openLoginModal()" title="Profile">👤</button>
+                <button class="icon-btn" id="profileBtn" onclick="toggleProfileMenu()" title="Profile">👤</button>
+                <div id="profileMenu" class="profile-menu" style="display: none;">
+                    <div id="loggedOutMenu">
+                        <div class="profile-menu-item" onclick="openLoginModal(); toggleProfileMenu();">Sign In</div>
+                    </div>
+                    <div id="loggedInMenu" style="display: none;">
+                        <div class="profile-menu-item" id="userEmail" style="font-weight: bold; border-bottom: 1px solid #303030;"></div>
+                        <div class="profile-menu-item" onclick="logout(); toggleProfileMenu();">Logout</div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -138,8 +147,8 @@
                     <span class="icon">📚</span>
                     <span class="label">Library</span>
                 </div>
-                <div class="nav-item" onclick="openLoginModal()">
-                    <span class="icon">👤</span>
+                <div class="nav-item" onclick="toggleProfileMenu()">
+                    <span class="icon" id="mobileProfileIcon">👤</span>
                     <span class="label">Profile</span>
                 </div>
             </nav>

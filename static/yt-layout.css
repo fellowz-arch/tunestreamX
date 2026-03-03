@@ -1307,3 +1307,35 @@ body {
     font-size: 13px;
     line-height: 1.4;
 }
+
+.profile-menu {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-width: 200px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 1001;
+}
+
+.profile-menu-item {
+    padding: 12px 16px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.profile-menu-item:hover {
+    background: var(--bg-hover);
+}
+
+.profile-menu-item:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.profile-menu-item:last-child {
+    border-radius: 0 0 8px 8px;
+}

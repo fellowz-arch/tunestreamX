@@ -380,12 +380,7 @@ function selectSuggestion(text) {
     }
 }
 
-document.addEventListener('click', (e) => {
-    const suggestionsDiv = document.getElementById('suggestions');
-    if (suggestionsDiv && !e.target.closest('.search-box')) {
-        suggestionsDiv.classList.remove('active');
-    }
-});
+
 
 function toggleTheme() {
     document.body.classList.toggle('light');
@@ -594,17 +589,80 @@ function loginWithGithub() {
 }
 
 function updateProfileButton(email) {
-    const profileBtn = document.querySelector('.icon-btn[onclick="openLoginModal()"]');
+    const profileBtn = document.getElementById('profileBtn');
+    const mobileProfileIcon = document.getElementById('mobileProfileIcon');
+    const userEmailDiv = document.getElementById('userEmail');
+    const loggedInMenu = document.getElementById('loggedInMenu');
+    const loggedOutMenu = document.getElementById('loggedOutMenu');
+    
     if (profileBtn) {
         profileBtn.innerHTML = '✓';
         profileBtn.title = email;
     }
+    if (mobileProfileIcon) {
+        mobileProfileIcon.textContent = '✓';
+    }
+    if (userEmailDiv) {
+        userEmailDiv.textContent = email;
+    }
+    if (loggedInMenu) {
+        loggedInMenu.style.display = 'block';
+    }
+    if (loggedOutMenu) {
+        loggedOutMenu.style.display = 'none';
+    }
 }
+
+function toggleProfileMenu() {
+    const menu = document.getElementById('profileMenu');
+    if (menu) {
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+function logout() {
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('isLoggedIn');
+    
+    const profileBtn = document.getElementById('profileBtn');
+    const mobileProfileIcon = document.getElementById('mobileProfileIcon');
+    const loggedInMenu = document.getElementById('loggedInMenu');
+    const loggedOutMenu = document.getElementById('loggedOutMenu');
+    
+    if (profileBtn) {
+        profileBtn.innerHTML = '👤';
+        profileBtn.title = 'Profile';
+    }
+    if (mobileProfileIcon) {
+        mobileProfileIcon.textContent = '👤';
+    }
+    if (loggedInMenu) {
+        loggedInMenu.style.display = 'none';
+    }
+    if (loggedOutMenu) {
+        loggedOutMenu.style.display = 'block';
+    }
+    
+    alert('Logged out successfully!');
+}
+
+document.addEventListener('click', (e) => {
+    const menu = document.getElementById('profileMenu');
+    const profileBtn = document.getElementById('profileBtn');
+    if (menu && profileBtn && !profileBtn.contains(e.target) && !menu.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+});
 
 document.addEventListener('click', (e) => {
     const modal = document.getElementById('loginModal');
     if (e.target === modal) {
         closeLoginModal();
+    }
+    
+    const suggestionsDiv = document.getElementById('suggestions');
+    if (suggestionsDiv && !e.target.closest('.search-box')) {
+        suggestionsDiv.classList.remove('active');
     }
 });
 
