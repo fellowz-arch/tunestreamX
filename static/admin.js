@@ -93,7 +93,11 @@ function initCharts() {
 
 function initUserChart(userData) {
     const ctx = document.getElementById('userChart');
-    if (!ctx || charts.userChart) return;
+    if (!ctx) return;
+    
+    if (charts.userChart) {
+        charts.userChart.destroy();
+    }
     
     charts.userChart = new Chart(ctx, {
         type: 'line',
@@ -111,6 +115,10 @@ function initUserChart(userData) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            },
             plugins: { 
                 legend: { 
                     labels: { color: '#fff', font: { size: 12 } } 
@@ -132,7 +140,11 @@ function initUserChart(userData) {
 
 function initViewsChart(viewsData) {
     const ctx = document.getElementById('viewsChart');
-    if (!ctx || charts.viewsChart) return;
+    if (!ctx) return;
+    
+    if (charts.viewsChart) {
+        charts.viewsChart.destroy();
+    }
     
     charts.viewsChart = new Chart(ctx, {
         type: 'bar',
@@ -147,6 +159,10 @@ function initViewsChart(viewsData) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            },
             plugins: { 
                 legend: { 
                     labels: { color: '#fff', font: { size: 12 } } 
@@ -168,7 +184,11 @@ function initViewsChart(viewsData) {
 
 function initRevenueChart(revenueData) {
     const ctx = document.getElementById('revenueChart');
-    if (!ctx || charts.revenueChart) return;
+    if (!ctx) return;
+    
+    if (charts.revenueChart) {
+        charts.revenueChart.destroy();
+    }
     
     charts.revenueChart = new Chart(ctx, {
         type: 'doughnut',
@@ -182,6 +202,10 @@ function initRevenueChart(revenueData) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            },
             plugins: { 
                 legend: { 
                     labels: { color: '#fff', font: { size: 12 } } 
@@ -193,7 +217,11 @@ function initRevenueChart(revenueData) {
 
 function initCategoryChart(categoryData) {
     const ctx = document.getElementById('categoryChart');
-    if (!ctx || charts.categoryChart) return;
+    if (!ctx) return;
+    
+    if (charts.categoryChart) {
+        charts.categoryChart.destroy();
+    }
     
     charts.categoryChart = new Chart(ctx, {
         type: 'pie',
@@ -207,6 +235,10 @@ function initCategoryChart(categoryData) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            },
             plugins: { 
                 legend: { 
                     labels: { color: '#fff', font: { size: 12 } } 
@@ -487,15 +519,42 @@ async function dismissReport(reportId) {
 document.addEventListener('DOMContentLoaded', function() {
     animateStats();
     
-    // Auto-refresh stats every 10 seconds
+    // Auto-refresh stats and charts every 10 seconds
     setInterval(() => {
         if (currentSection === 'dashboard') {
             animateStats();
         } else if (currentSection === 'ads') {
             loadAds();
+        } else if (currentSection === 'analytics') {
+            updateCharts();
         }
     }, 10000);
 });
+
+// Update charts with new data
+function updateCharts() {
+    fetch('/admin/chart-data')
+        .then(response => response.json())
+        .then(data => {
+            if (charts.userChart) {
+                charts.userChart.data.datasets[0].data = data.userGrowth;
+                charts.userChart.update('active');
+            }
+            if (charts.viewsChart) {
+                charts.viewsChart.data.datasets[0].data = data.viewsData;
+                charts.viewsChart.update('active');
+            }
+            if (charts.revenueChart) {
+                charts.revenueChart.data.datasets[0].data = data.revenueBreakdown;
+                charts.revenueChart.update('active');
+            }
+            if (charts.categoryChart) {
+                charts.categoryChart.data.datasets[0].data = data.categories;
+                charts.categoryChart.update('active');
+            }
+        })
+        .catch(error => console.error('Error updating charts:', error));
+}
 
 // Mobile sidebar toggle
 function toggleSidebar() {
