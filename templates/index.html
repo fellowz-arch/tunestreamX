@@ -274,38 +274,36 @@
     <script src="/static/script.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/sw.js').then(() => {
-                console.log('Service Worker registered');
+            navigator.serviceWorker.register('/static/sw.js').then(reg => {
+                console.log('Service Worker registered', reg);
+            }).catch(err => {
+                console.error('Service Worker registration failed', err);
             });
         }
         
         let deferredPrompt;
-        let installShown = false;
         
         window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('beforeinstallprompt fired');
             e.preventDefault();
             deferredPrompt = e;
-            console.log('Install prompt ready');
+            
+            setTimeout(() => {
+                if (deferredPrompt) {
+                    console.log('Showing install prompt');
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        console.log('User choice:', choiceResult.outcome);
+                        deferredPrompt = null;
+                    });
+                }
+            }, 6000);
         });
         
         window.addEventListener('appinstalled', () => {
-            console.log('App installed');
+            console.log('App installed successfully');
             fetch('/track/install', { method: 'POST' });
         });
-        
-        // Show install prompt after splash screen
-        setTimeout(() => {
-            if (deferredPrompt && !installShown) {
-                installShown = true;
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('User accepted install');
-                    }
-                    deferredPrompt = null;
-                });
-            }
-        }, 5000);
         });
     </script>
 </body>
