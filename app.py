@@ -361,9 +361,11 @@ def load_data():
     try:
         if os.path.exists(DATA_FILE):
             with open(DATA_FILE, 'r') as f:
-                return json.load(f)
-    except:
-        pass
+                data = json.load(f)
+                print(f'Data loaded: {len(data.get("ads_storage", []))} ads, {len(data.get("registered_users", {}))} users')
+                return data
+    except Exception as e:
+        print(f'Error loading data: {e}')
     return {
         'analytics_data': {
             'downloads': 0, 'active_installs': 0, 'sessions': 0, 'ad_views': 0, 'users': [], 'content': [], 'reports': [],
@@ -377,21 +379,31 @@ def load_data():
 
 def save_data():
     try:
+        data_to_save = {
+            'analytics_data': analytics_data, 
+            'registered_users': registered_users, 
+            'ads_storage': ads_storage, 
+            'ad_views': ad_views
+        }
         with open(DATA_FILE, 'w') as f:
-            json.dump({
-                'analytics_data': analytics_data, 
-                'registered_users': registered_users, 
-                'ads_storage': ads_storage, 
-                'ad_views': ad_views
-            }, f, indent=2)
+            json.dump(data_to_save, f, indent=2)
+        print(f'Data saved successfully: {len(ads_storage)} ads, {len(registered_users)} users')
     except Exception as e:
         print(f'Error saving data: {e}')
+        import traceback
+        traceback.print_exc()
 
 app_data = load_data()
-analytics_data = app_data['analytics_data']
-registered_users = app_data['registered_users']
-ads_storage = app_data['ads_storage']
-ad_views = app_data['ad_views']
+analytics_data = app_data.get('analytics_data', {
+    'downloads': 0, 'active_installs': 0, 'sessions': 0, 'ad_views': 0, 'users': [], 'content': [], 'reports': [],
+    'daily_stats': {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0},
+    'views_data': {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0},
+    'revenue_sources': {'ads': 0, 'premium': 0, 'creator_fund': 0},
+    'categories': {'music': 0, 'movies': 0, 'sports': 0, 'gaming': 0, 'other': 0}
+})
+registered_users = app_data.get('registered_users', {})
+ads_storage = app_data.get('ads_storage', [])
+ad_views = app_data.get('ad_views', {})
 
 @app.route('/track/download', methods=['POST'])
 def track_download():
