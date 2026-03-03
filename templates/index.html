@@ -265,8 +265,27 @@
     <script src="/static/script.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/sw.js');
+            navigator.serviceWorker.register('/static/sw.js').then(() => {
+                console.log('Service Worker registered');
+            });
         }
+        
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('Install prompt ready');
+            
+            // Show install button after 3 seconds
+            setTimeout(() => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        deferredPrompt = null;
+                    });
+                }
+            }, 3000);
+        });
     </script>
 </body>
 </html>
