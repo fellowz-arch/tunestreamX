@@ -494,3 +494,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 30000);
 });
+
+// Mobile sidebar toggle
+function toggleSidebar() {
+    const sidebar = document.querySelector('.admin-sidebar');
+    sidebar.classList.toggle('active');
+}
