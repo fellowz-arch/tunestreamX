@@ -487,12 +487,14 @@ async function dismissReport(reportId) {
 document.addEventListener('DOMContentLoaded', function() {
     animateStats();
     
-    // Auto-refresh stats every 30 seconds
+    // Auto-refresh stats every 10 seconds
     setInterval(() => {
         if (currentSection === 'dashboard') {
             animateStats();
+        } else if (currentSection === 'ads') {
+            loadAds();
         }
-    }, 30000);
+    }, 10000);
 });
 
 // Mobile sidebar toggle

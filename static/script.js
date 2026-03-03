@@ -774,7 +774,9 @@ function showAdPlayer(adVideoFile, adClickUrl, adId, mainVideoId) {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({adId})
-    });
+    }).then(response => response.json())
+      .then(data => console.log('Ad view tracked:', data))
+      .catch(error => console.error('Failed to track ad view:', error));
     
     let timeLeft = 5;
     const countdownInterval = setInterval(() => {
