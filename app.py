@@ -520,7 +520,7 @@ def admin_ads():
     return jsonify([{
         'id': ad['id'],
         'title': ad['title'],
-        'videoFile': ad.get('videoFile'),
+        'videoFile': ad.get('videoFile') or ad.get('videoData'),
         'clickUrl': ad.get('clickUrl'),
         'views': ad_views.get(ad['id'], 0),
         'uploaded': ad['uploaded']
@@ -548,23 +548,24 @@ def upload_ad():
         if file_ext not in allowed_extensions:
             return jsonify({'success': False, 'error': 'Invalid file type. Use MP4, WebM, MOV, or AVI'}), 400
         
+        # Check file size (max 50MB for base64 storage)
+        file.seek(0, 2)
+        file_size = file.tell()
+        file.seek(0)
+        if file_size > 50 * 1024 * 1024:
+            return jsonify({'success': False, 'error': 'File too large. Max 50MB'}), 400
+        
         ad_id = str(int(time.time()))
-        filename = f"ad_{ad_id}{file_ext}"
         
-        # Ensure static/ads directory exists
-        import os
-        ads_dir = os.path.join('static', 'ads')
-        os.makedirs(ads_dir, exist_ok=True)
-        
-        filepath = os.path.join(ads_dir, filename)
-        
-        # Save file
-        file.save(filepath)
+        # Store video as base64 for cloud deployment
+        import base64
+        video_data = base64.b64encode(file.read()).decode('utf-8')
+        mime_type = 'video/mp4' if file_ext == '.mp4' else 'video/webm'
         
         ad = {
             'id': ad_id,
             'title': title,
-            'videoFile': f'/static/ads/{filename}',
+            'videoData': f'data:{mime_type};base64,{video_data}',
             'clickUrl': click_url,
             'uploaded': time.strftime('%Y-%m-%d')
         }
@@ -590,9 +591,8 @@ def delete_ad():
 def get_ad():
     if ads_storage:
         ad = random.choice(ads_storage)
-        # Ensure the video file path is correct
         ad_copy = ad.copy()
-        ad_copy['videoFile'] = ad['videoFile']
+        ad_copy['videoFile'] = ad.get('videoFile') or ad.get('videoData')
         return jsonify(ad_copy)
     return jsonify(None)
 
