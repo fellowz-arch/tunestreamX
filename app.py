@@ -428,6 +428,7 @@ def track_view():
 def admin_stats():
     total_views = sum(analytics_data['views_data'].values())
     total_categories = sum(analytics_data['categories'].values())
+    total_ad_views = sum(ad_views.values())
     return jsonify({
         'totalDownloads': analytics_data['downloads'],
         'activeInstalls': analytics_data['active_installs'],
@@ -435,8 +436,8 @@ def admin_stats():
         'activeSessions': analytics_data['sessions'],
         'totalVideos': total_categories,
         'totalViews': total_views,
-        'adViews': analytics_data['ad_views'],
-        'totalRevenue': analytics_data['ad_views'] * 0.05,  # $0.05 per ad view
+        'adViews': total_ad_views,
+        'totalRevenue': total_ad_views * 0.05,
         'reportedContent': len(analytics_data['reports']),
         'bannedUsers': 0
     })
@@ -612,6 +613,7 @@ def track_ad_view():
         ad_views[ad_id] += 1
     else:
         ad_views[ad_id] = 1
+    save_data()
     return jsonify({'success': True})
 
 # Creator Dashboard (Like YouTube Studio)
