@@ -376,8 +376,16 @@ def load_data():
     }
 
 def save_data():
-    with open(DATA_FILE, 'w') as f:
-        json.dump({'analytics_data': analytics_data, 'registered_users': registered_users, 'ads_storage': ads_storage, 'ad_views': ad_views}, f)
+    try:
+        with open(DATA_FILE, 'w') as f:
+            json.dump({
+                'analytics_data': analytics_data, 
+                'registered_users': registered_users, 
+                'ads_storage': ads_storage, 
+                'ad_views': ad_views
+            }, f, indent=2)
+    except Exception as e:
+        print(f'Error saving data: {e}')
 
 app_data = load_data()
 analytics_data = app_data['analytics_data']
@@ -684,6 +692,8 @@ def signup():
         'videos': 0,
         'views': 0
     })
+    
+    save_data()
     
     return jsonify({'success': True, 'message': 'Account created successfully'})
 def send_welcome_email():
