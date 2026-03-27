@@ -198,28 +198,6 @@ function playLiveStream(v) {
         fullPlayerFrame.src = v.pageUrl;
     }
 }
-            item.onclick = () => playAudio(v.id, v.title, v.thumbnail);
-        }
-        
-        const img = document.createElement('img');
-        img.src = v.thumbnail;
-        img.alt = v.title;
-        img.onerror = function() { this.src = 'https://via.placeholder.com/200x200?text=No+Image'; };
-        
-        const info = document.createElement('div');
-        info.className = 'result-info';
-        const liveBadge = v.isLive ? '<span style="background:#e63946;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;margin-right:6px;">🔴 LIVE</span>' : '';
-        const certifyBadge = v.source === 'certifytv' ? '<span style="background:#f59e0b;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;margin-right:6px;">CertifyTV</span>' : '';
-        info.innerHTML = `
-            <h3>${liveBadge}${certifyBadge}${v.title}</h3>
-            <div class="artist">${v.channel || 'Unknown'}</div>
-        `;
-        
-        item.appendChild(img);
-        item.appendChild(info);
-        resultsDiv.appendChild(item);
-    });
-}
 
 let currentVideoId = '';
 let currentTitle = '';
