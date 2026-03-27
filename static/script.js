@@ -189,13 +189,68 @@ function playLiveStream(v) {
     fullPlayerTitle.innerHTML = '<span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;margin-right:8px;">&#128308; LIVE</span>' + v.title;
     fullPlayerArtist.textContent = v.channel || 'Live Stream';
     fullPlayer.classList.add('active');
+    fullPlayerFrame.style.display = 'none';
 
-    if (v.embedUrl) {
+    // Remove any existing video element
+    const existingVideo = document.getElementById('liveVideoPlayer');
+    if (existingVideo) existingVideo.remove();
+
+    if (v.streamType === 'm3u8' && v.streamUrl) {
+        playM3U8(v.streamUrl);
+    } else if (v.streamType === 'iframe' && v.streamUrl) {
         fullPlayerFrame.style.display = 'block';
-        fullPlayerFrame.src = v.embedUrl;
-    } else if (v.pageUrl) {
-        fullPlayerFrame.style.display = 'block';
-        fullPlayerFrame.src = v.pageUrl;
+        fullPlayerFrame.src = v.streamUrl;
+    } else {
+        // Try proxy to extract stream on the fly
+        fetch(`/proxy-stream?url=${encodeURIComponent(v.pageUrl)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.type === 'm3u8' && data.url) {
+                    playM3U8(data.url);
+                } else if (data.type === 'iframe' && data.url) {
+                    fullPlayerFrame.style.display = 'block';
+                    fullPlayerFrame.src = data.url;
+                } else {
+                    fullPlayerFrame.style.display = 'block';
+                    fullPlayerFrame.src = v.pageUrl;
+                }
+            })
+            .catch(() => {
+                fullPlayerFrame.style.display = 'block';
+                fullPlayerFrame.src = v.pageUrl;
+            });
+    }
+}
+
+function playM3U8(url) {
+    const fullPlayerFrame = document.getElementById('fullPlayerFrame');
+    const container = fullPlayerFrame.parentElement;
+
+    const video = document.createElement('video');
+    video.id = 'liveVideoPlayer';
+    video.style.cssText = 'width:100%;height:100%;background:#000;';
+    video.controls = true;
+    video.autoplay = true;
+    container.insertBefore(video, fullPlayerFrame);
+
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+    } else if (window.Hls && Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+    } else {
+        // Fallback: load HLS.js dynamically
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+        script.onload = () => {
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+            }
+        };
+        document.head.appendChild(script);
     }
 }
 
@@ -342,6 +397,9 @@ function closePlayer() {
     
     fullPlayer.classList.remove('active');
     fullPlayerFrame.src = '';
+    
+    const liveVideo = document.getElementById('liveVideoPlayer');
+    if (liveVideo) liveVideo.remove();
     
     currentVideoId = '';
     currentTitle = '';

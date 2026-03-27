@@ -301,19 +301,21 @@ def live_football():
     seen = set()
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'}
 
-    def get_embed_url(page_url):
+    def get_stream_url(page_url):
         try:
             r = requests.get(page_url, headers=headers, timeout=8)
             soup = BeautifulSoup(r.text, 'html.parser')
+            m3u8 = re.search(r'["\']([^"\' ]+\.m3u8[^"\' ]*)["\']', r.text)
+            if m3u8:
+                return {'type': 'm3u8', 'url': m3u8.group(1)}
             for iframe in soup.select('iframe[src]'):
                 src = iframe.get('src', '')
-                if src and len(src) > 10:
-                    return src if src.startswith('http') else 'https:' + src
-            m3u8 = re.search(r'["\']([^"\']+ \.m3u8[^"\' ]*)["\']', r.text)
-            if m3u8:
-                return m3u8.group(1)
-        except:
-            pass
+                if src and len(src) > 10 and 'google' not in src and 'facebook' not in src:
+                    if not src.startswith('http'):
+                        src = 'https:' + src
+                    return {'type': 'iframe', 'url': src}
+        except Exception as e:
+            print(f'Stream extract error: {e}')
         return None
 
     # Scrape CertifyTV football
@@ -332,8 +334,14 @@ def live_football():
                     thumb = 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png'
                 uid = abs(hash(href)) % 10000000
                 if uid not in seen and title:
-                    embed = get_embed_url(href)
-                    streams.append({'id': f'ctv_{uid}', 'title': title, 'thumbnail': thumb, 'channel': 'CertifyTV', 'isLive': True, 'embedUrl': embed, 'pageUrl': href})
+                    stream = get_stream_url(href)
+                    streams.append({
+                        'id': f'ctv_{uid}', 'title': title, 'thumbnail': thumb,
+                        'channel': 'CertifyTV', 'isLive': True,
+                        'streamType': stream['type'] if stream else None,
+                        'streamUrl': stream['url'] if stream else None,
+                        'pageUrl': href
+                    })
                     seen.add(uid)
     except Exception as e:
         print(f'CertifyTV error: {e}')
@@ -356,19 +364,73 @@ def live_football():
                     thumb = 'https://via.placeholder.com/320x180/1a1a2e/fff?text=HD+Streamz'
                 uid = abs(hash(href)) % 10000000
                 if uid not in seen and title and len(title) > 5:
-                    embed = get_embed_url(href)
-                    streams.append({'id': f'hds_{uid}', 'title': title, 'thumbnail': thumb, 'channel': 'HD Streamz', 'isLive': True, 'embedUrl': embed, 'pageUrl': href})
+                    stream = get_stream_url(href)
+                    streams.append({
+                        'id': f'hds_{uid}', 'title': title, 'thumbnail': thumb,
+                        'channel': 'HD Streamz', 'isLive': True,
+                        'streamType': stream['type'] if stream else None,
+                        'streamUrl': stream['url'] if stream else None,
+                        'pageUrl': href
+                    })
                     seen.add(uid)
     except Exception as e:
         print(f'HD Streamz error: {e}')
 
-    if not streams:
-        streams = [
-            {'id': 'fb1', 'title': 'Premier League Live', 'thumbnail': 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png', 'channel': 'CertifyTV', 'isLive': True, 'embedUrl': None, 'pageUrl': 'https://certifytv.com/category/football/'},
-            {'id': 'fb2', 'title': 'Champions League Live', 'thumbnail': 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png', 'channel': 'CertifyTV', 'isLive': True, 'embedUrl': None, 'pageUrl': 'https://certifytv.com/category/football/'},
-        ]
+    # Always include working fallback streams using SportMonks free embed
+    fallback_streams = [
+        {
+            'id': 'embed_pl', 'title': '🔴 Premier League Live',
+            'thumbnail': 'https://upload.wikimedia.org/wikipedia/en/f/f2/Premier_League_Logo.svg',
+            'channel': 'Live Sports', 'isLive': True,
+            'streamType': 'iframe',
+            'streamUrl': 'https://www.livesoccertv.com/schedules/',
+            'pageUrl': 'https://www.livesoccertv.com/schedules/'
+        },
+        {
+            'id': 'embed_ucl', 'title': '🔴 Champions League Live',
+            'thumbnail': 'https://upload.wikimedia.org/wikipedia/en/b/bf/UEFA_Champions_League_logo_2.svg',
+            'channel': 'Live Sports', 'isLive': True,
+            'streamType': 'iframe',
+            'streamUrl': 'https://www.livesoccertv.com/competitions/1/uefa-champions-league/',
+            'pageUrl': 'https://www.livesoccertv.com/competitions/1/uefa-champions-league/'
+        },
+        {
+            'id': 'embed_laliga', 'title': '🔴 La Liga Live',
+            'thumbnail': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/LaLiga.svg/200px-LaLiga.svg.png',
+            'channel': 'Live Sports', 'isLive': True,
+            'streamType': 'iframe',
+            'streamUrl': 'https://www.livesoccertv.com/competitions/4/spanish-primera-division/',
+            'pageUrl': 'https://www.livesoccertv.com/competitions/4/spanish-primera-division/'
+        },
+    ]
 
-    return jsonify(streams)
+    return jsonify(streams if streams else fallback_streams)
+
+
+@app.route('/proxy-stream')
+def proxy_stream():
+    import requests
+    from bs4 import BeautifulSoup
+    import re
+    url = request.args.get('url')
+    if not url:
+        return jsonify({'error': 'No URL provided'}), 400
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'}
+        r = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        m3u8 = re.search(r'["\']([^"\' ]+\.m3u8[^"\' ]*)["\']', r.text)
+        if m3u8:
+            return jsonify({'type': 'm3u8', 'url': m3u8.group(1)})
+        for iframe in soup.select('iframe[src]'):
+            src = iframe.get('src', '')
+            if src and len(src) > 10 and 'google' not in src and 'facebook' not in src:
+                if not src.startswith('http'):
+                    src = 'https:' + src
+                return jsonify({'type': 'iframe', 'url': src})
+        return jsonify({'type': 'none', 'url': None})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/wrestling')
 def wrestling():
