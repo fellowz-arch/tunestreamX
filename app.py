@@ -296,78 +296,76 @@ def football():
 def live_football():
     import requests
     from bs4 import BeautifulSoup
+    import re
     streams = []
     seen = set()
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'}
 
-    # Scrape CertifyTV homepage for live matches
-    try:
-        r = requests.get('https://certifytv.com/', headers=headers, timeout=10)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        for article in soup.select('article, .post, .entry, .item, .card'):
-            title_el = article.select_one('h2, h3, h4, .entry-title, .title, .post-title')
-            link_el = article.select_one('a[href]')
-            img_el = article.select_one('img')
-            if title_el and link_el:
-                title = title_el.get_text(strip=True)
-                href = link_el.get('href', '')
-                thumb = (img_el.get('src') or img_el.get('data-src', '')) if img_el else ''
-                if not thumb or 'placeholder' in thumb:
-                    thumb = 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png'
-                uid = abs(hash(href)) % 10000000
-                if uid not in seen and title and len(title) > 3:
-                    streams.append({'id': f'ctv_{uid}', 'title': f'\U0001f534 {title}', 'thumbnail': thumb, 'channel': 'CertifyTV', 'isLive': True, 'source': 'external', 'url': href})
-                    seen.add(uid)
-    except Exception as e:
-        print(f'CertifyTV home error: {e}')
+    def get_embed_url(page_url):
+        try:
+            r = requests.get(page_url, headers=headers, timeout=8)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            for iframe in soup.select('iframe[src]'):
+                src = iframe.get('src', '')
+                if src and len(src) > 10:
+                    return src if src.startswith('http') else 'https:' + src
+            m3u8 = re.search(r'["\']([^"\']+ \.m3u8[^"\' ]*)["\']', r.text)
+            if m3u8:
+                return m3u8.group(1)
+        except:
+            pass
+        return None
 
-    # Scrape CertifyTV football category
+    # Scrape CertifyTV football
     try:
         r = requests.get('https://certifytv.com/category/football/', headers=headers, timeout=10)
         soup = BeautifulSoup(r.text, 'html.parser')
-        for article in soup.select('article, .post, .entry'):
+        for article in soup.select('article')[:15]:
             title_el = article.select_one('h2, h3, .entry-title')
             link_el = article.select_one('a[href]')
             img_el = article.select_one('img')
             if title_el and link_el:
                 title = title_el.get_text(strip=True)
                 href = link_el.get('href', '')
-                thumb = (img_el.get('src') or img_el.get('data-src', '')) if img_el else 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png'
+                thumb = (img_el.get('src') or img_el.get('data-src', '')) if img_el else ''
+                if not thumb:
+                    thumb = 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png'
                 uid = abs(hash(href)) % 10000000
-                if uid not in seen and title and len(title) > 3:
-                    streams.append({'id': f'ctv_fb_{uid}', 'title': f'\u26bd {title}', 'thumbnail': thumb, 'channel': 'CertifyTV Football', 'isLive': True, 'source': 'external', 'url': href})
+                if uid not in seen and title:
+                    embed = get_embed_url(href)
+                    streams.append({'id': f'ctv_{uid}', 'title': title, 'thumbnail': thumb, 'channel': 'CertifyTV', 'isLive': True, 'embedUrl': embed, 'pageUrl': href})
                     seen.add(uid)
     except Exception as e:
-        print(f'CertifyTV football error: {e}')
+        print(f'CertifyTV error: {e}')
 
     # Scrape HD Streamz
     try:
-        for hds_url in ['https://hdstreamz.net/', 'https://hdstreamz.net/football/']:
-            r = requests.get(hds_url, headers=headers, timeout=10)
-            soup = BeautifulSoup(r.text, 'html.parser')
-            for article in soup.select('article, .post, .match, .event, .card, li'):
-                title_el = article.select_one('h2, h3, h4, .title, .entry-title, a')
-                link_el = article.select_one('a[href]')
-                img_el = article.select_one('img')
-                if title_el and link_el:
-                    title = title_el.get_text(strip=True)
-                    href = link_el.get('href', '')
-                    thumb = (img_el.get('src') or img_el.get('data-src', '')) if img_el else 'https://via.placeholder.com/320x180/1a1a2e/fff?text=HD+Streamz'
-                    if not thumb:
-                        thumb = 'https://via.placeholder.com/320x180/1a1a2e/fff?text=HD+Streamz'
-                    uid = abs(hash(href)) % 10000000
-                    if uid not in seen and title and len(title) > 5:
-                        streams.append({'id': f'hds_{uid}', 'title': f'\U0001f534 {title}', 'thumbnail': thumb, 'channel': 'HD Streamz', 'isLive': True, 'source': 'external', 'url': href if href.startswith('http') else f'https://hdstreamz.net{href}'})
-                        seen.add(uid)
+        r = requests.get('https://hdstreamz.net/', headers=headers, timeout=10)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        for article in soup.select('article, .post, .card')[:15]:
+            title_el = article.select_one('h2, h3, h4, .title, .entry-title')
+            link_el = article.select_one('a[href]')
+            img_el = article.select_one('img')
+            if title_el and link_el:
+                title = title_el.get_text(strip=True)
+                href = link_el.get('href', '')
+                if not href.startswith('http'):
+                    href = f'https://hdstreamz.net{href}'
+                thumb = (img_el.get('src') or img_el.get('data-src', '')) if img_el else ''
+                if not thumb:
+                    thumb = 'https://via.placeholder.com/320x180/1a1a2e/fff?text=HD+Streamz'
+                uid = abs(hash(href)) % 10000000
+                if uid not in seen and title and len(title) > 5:
+                    embed = get_embed_url(href)
+                    streams.append({'id': f'hds_{uid}', 'title': title, 'thumbnail': thumb, 'channel': 'HD Streamz', 'isLive': True, 'embedUrl': embed, 'pageUrl': href})
+                    seen.add(uid)
     except Exception as e:
         print(f'HD Streamz error: {e}')
 
-    # Fallback if nothing scraped
     if not streams:
         streams = [
-            {'id': 'fb1', 'title': '\U0001f534 LIVE: Watch on CertifyTV', 'thumbnail': 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png', 'channel': 'CertifyTV', 'isLive': True, 'source': 'external', 'url': 'https://certifytv.com/'},
-            {'id': 'fb2', 'title': '\u26bd Football Streams - CertifyTV', 'thumbnail': 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png', 'channel': 'CertifyTV', 'isLive': True, 'source': 'external', 'url': 'https://certifytv.com/category/football/'},
-            {'id': 'fb3', 'title': '\U0001f534 HD Streamz - Live Sports', 'thumbnail': 'https://via.placeholder.com/320x180/1a1a2e/fff?text=HD+Streamz', 'channel': 'HD Streamz', 'isLive': True, 'source': 'external', 'url': 'https://hdstreamz.net/'},
+            {'id': 'fb1', 'title': 'Premier League Live', 'thumbnail': 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png', 'channel': 'CertifyTV', 'isLive': True, 'embedUrl': None, 'pageUrl': 'https://certifytv.com/category/football/'},
+            {'id': 'fb2', 'title': 'Champions League Live', 'thumbnail': 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png', 'channel': 'CertifyTV', 'isLive': True, 'embedUrl': None, 'pageUrl': 'https://certifytv.com/category/football/'},
         ]
 
     return jsonify(streams)

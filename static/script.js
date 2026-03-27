@@ -150,13 +150,54 @@ function displayResults(videos) {
         const item = document.createElement('div');
         item.className = 'result-item';
 
-        if (v.source === 'certifytv' && v.url) {
+        if (v.isLive) {
+            item.onclick = () => playLiveStream(v);
+        } else if (v.source === 'certifytv' && v.url) {
             item.onclick = () => window.open(v.url, '_blank');
-        } else if (v.isLive && v.source === 'external' && v.url) {
-            item.onclick = () => window.open(v.url, '_blank', 'noopener,noreferrer');
-        } else if (v.isLive) {
-            item.onclick = () => playAudio(v.id, v.title, v.thumbnail);
         } else {
+            item.onclick = () => playAudio(v.id, v.title, v.thumbnail);
+        }
+        
+        const img = document.createElement('img');
+        img.src = v.thumbnail;
+        img.alt = v.title;
+        img.onerror = function() { this.src = 'https://via.placeholder.com/200x200?text=No+Image'; };
+        
+        const info = document.createElement('div');
+        info.className = 'result-info';
+        const liveBadge = v.isLive ? '<span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:6px;font-weight:bold;">&#128308; LIVE</span>' : '';
+        const sourceBadge = v.channel ? `<span style="background:#333;color:#aaa;padding:2px 6px;border-radius:4px;font-size:10px;">${v.channel}</span>` : '';
+        info.innerHTML = `
+            <h3>${liveBadge}${v.title}</h3>
+            <div class="artist">${sourceBadge}</div>
+        `;
+        
+        item.appendChild(img);
+        item.appendChild(info);
+        resultsDiv.appendChild(item);
+    });
+}
+
+function playLiveStream(v) {
+    const fullPlayer = document.getElementById('fullPlayer');
+    const fullPlayerFrame = document.getElementById('fullPlayerFrame');
+    const fullPlayerImg = document.getElementById('fullPlayerImg');
+    const fullPlayerTitle = document.getElementById('fullPlayerTitle');
+    const fullPlayerArtist = document.getElementById('fullPlayerArtist');
+
+    fullPlayerImg.src = v.thumbnail;
+    fullPlayerTitle.innerHTML = '<span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;margin-right:8px;">&#128308; LIVE</span>' + v.title;
+    fullPlayerArtist.textContent = v.channel || 'Live Stream';
+    fullPlayer.classList.add('active');
+
+    if (v.embedUrl) {
+        fullPlayerFrame.style.display = 'block';
+        fullPlayerFrame.src = v.embedUrl;
+    } else if (v.pageUrl) {
+        fullPlayerFrame.style.display = 'block';
+        fullPlayerFrame.src = v.pageUrl;
+    }
+}
             item.onclick = () => playAudio(v.id, v.title, v.thumbnail);
         }
         
