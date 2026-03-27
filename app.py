@@ -230,31 +230,53 @@ def suggestions():
 @app.route('/football')
 def football():
     import requests
-    import random
+    from bs4 import BeautifulSoup
     import datetime
     
     all_videos = []
     seen = set()
-    
-    # Get today's and recent matches to show highlights/replays
     today = datetime.datetime.now()
-    
-    # Search for today's football content (highlights, analysis, replays)
+
+    # Scrape CertifyTV for football content
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+        r = requests.get('https://certifytv.com/category/football/', headers=headers, timeout=10)
+        if r.status_code == 200:
+            soup = BeautifulSoup(r.text, 'html.parser')
+            for article in soup.select('article')[:20]:
+                title_el = article.select_one('h2, h3, .entry-title')
+                link_el = article.select_one('a')
+                img_el = article.select_one('img')
+                if title_el and link_el:
+                    title = title_el.get_text(strip=True)
+                    link = link_el.get('href', '')
+                    thumb = img_el.get('src', 'https://via.placeholder.com/320x180?text=Football') if img_el else 'https://via.placeholder.com/320x180?text=Football'
+                    vid_id = f'certify_{abs(hash(link)) % 1000000}'
+                    if vid_id not in seen:
+                        all_videos.append({
+                            'id': vid_id,
+                            'title': title,
+                            'duration': 0,
+                            'thumbnail': thumb,
+                            'channel': 'CertifyTV',
+                            'views': 0,
+                            'likes': 0,
+                            'source': 'certifytv',
+                            'url': link
+                        })
+                        seen.add(vid_id)
+    except Exception as e:
+        print(f'CertifyTV scrape error: {e}')
+
+    # YouTube football highlights as fallback/supplement
     search_terms = [
         f'football highlights {today.strftime("%B %d %Y")}',
-        'football today highlights',
         'premier league highlights today',
         'champions league highlights',
-        'football match highlights',
         'football goals today',
-        'football full match replay',
-        'la liga highlights',
-        'serie a highlights',
-        'bundesliga highlights'
     ]
-    
     for term in search_terms:
-        if len(all_videos) >= 100:
+        if len(all_videos) >= 80:
             break
         try:
             videos = fetch_videos(term, 15)
@@ -263,13 +285,92 @@ def football():
                     all_videos.append(v)
                     seen.add(v['id'])
         except Exception as e:
-            print(f"Error fetching {term}: {e}")
-            continue
-    
-    # Sort by upload date (most recent first)
+            print(f'Error fetching {term}: {e}')
+
     random.shuffle(all_videos)
-    
     return jsonify(all_videos if all_videos else [])
+
+
+# Live football streams from CertifyTV and HD Streamz
+@app.route('/live-football')
+def live_football():
+    import requests
+    from bs4 import BeautifulSoup
+    streams = []
+    seen = set()
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'}
+
+    # Scrape CertifyTV homepage for live matches
+    try:
+        r = requests.get('https://certifytv.com/', headers=headers, timeout=10)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        for article in soup.select('article, .post, .entry, .item, .card'):
+            title_el = article.select_one('h2, h3, h4, .entry-title, .title, .post-title')
+            link_el = article.select_one('a[href]')
+            img_el = article.select_one('img')
+            if title_el and link_el:
+                title = title_el.get_text(strip=True)
+                href = link_el.get('href', '')
+                thumb = (img_el.get('src') or img_el.get('data-src', '')) if img_el else ''
+                if not thumb or 'placeholder' in thumb:
+                    thumb = 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png'
+                uid = abs(hash(href)) % 10000000
+                if uid not in seen and title and len(title) > 3:
+                    streams.append({'id': f'ctv_{uid}', 'title': f'\U0001f534 {title}', 'thumbnail': thumb, 'channel': 'CertifyTV', 'isLive': True, 'source': 'external', 'url': href})
+                    seen.add(uid)
+    except Exception as e:
+        print(f'CertifyTV home error: {e}')
+
+    # Scrape CertifyTV football category
+    try:
+        r = requests.get('https://certifytv.com/category/football/', headers=headers, timeout=10)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        for article in soup.select('article, .post, .entry'):
+            title_el = article.select_one('h2, h3, .entry-title')
+            link_el = article.select_one('a[href]')
+            img_el = article.select_one('img')
+            if title_el and link_el:
+                title = title_el.get_text(strip=True)
+                href = link_el.get('href', '')
+                thumb = (img_el.get('src') or img_el.get('data-src', '')) if img_el else 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png'
+                uid = abs(hash(href)) % 10000000
+                if uid not in seen and title and len(title) > 3:
+                    streams.append({'id': f'ctv_fb_{uid}', 'title': f'\u26bd {title}', 'thumbnail': thumb, 'channel': 'CertifyTV Football', 'isLive': True, 'source': 'external', 'url': href})
+                    seen.add(uid)
+    except Exception as e:
+        print(f'CertifyTV football error: {e}')
+
+    # Scrape HD Streamz
+    try:
+        for hds_url in ['https://hdstreamz.net/', 'https://hdstreamz.net/football/']:
+            r = requests.get(hds_url, headers=headers, timeout=10)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            for article in soup.select('article, .post, .match, .event, .card, li'):
+                title_el = article.select_one('h2, h3, h4, .title, .entry-title, a')
+                link_el = article.select_one('a[href]')
+                img_el = article.select_one('img')
+                if title_el and link_el:
+                    title = title_el.get_text(strip=True)
+                    href = link_el.get('href', '')
+                    thumb = (img_el.get('src') or img_el.get('data-src', '')) if img_el else 'https://via.placeholder.com/320x180/1a1a2e/fff?text=HD+Streamz'
+                    if not thumb:
+                        thumb = 'https://via.placeholder.com/320x180/1a1a2e/fff?text=HD+Streamz'
+                    uid = abs(hash(href)) % 10000000
+                    if uid not in seen and title and len(title) > 5:
+                        streams.append({'id': f'hds_{uid}', 'title': f'\U0001f534 {title}', 'thumbnail': thumb, 'channel': 'HD Streamz', 'isLive': True, 'source': 'external', 'url': href if href.startswith('http') else f'https://hdstreamz.net{href}'})
+                        seen.add(uid)
+    except Exception as e:
+        print(f'HD Streamz error: {e}')
+
+    # Fallback if nothing scraped
+    if not streams:
+        streams = [
+            {'id': 'fb1', 'title': '\U0001f534 LIVE: Watch on CertifyTV', 'thumbnail': 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png', 'channel': 'CertifyTV', 'isLive': True, 'source': 'external', 'url': 'https://certifytv.com/'},
+            {'id': 'fb2', 'title': '\u26bd Football Streams - CertifyTV', 'thumbnail': 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png', 'channel': 'CertifyTV', 'isLive': True, 'source': 'external', 'url': 'https://certifytv.com/category/football/'},
+            {'id': 'fb3', 'title': '\U0001f534 HD Streamz - Live Sports', 'thumbnail': 'https://via.placeholder.com/320x180/1a1a2e/fff?text=HD+Streamz', 'channel': 'HD Streamz', 'isLive': True, 'source': 'external', 'url': 'https://hdstreamz.net/'},
+        ]
+
+    return jsonify(streams)
 
 @app.route('/wrestling')
 def wrestling():

@@ -2,7 +2,7 @@
   "analytics_data": {
     "downloads": 0,
     "active_installs": 0,
-    "sessions": 11,
+    "sessions": 15,
     "ad_views": 0,
     "users": [],
     "content": [],
@@ -12,7 +12,7 @@
       "Tue": 1,
       "Wed": 0,
       "Thu": 0,
-      "Fri": 0,
+      "Fri": 4,
       "Sat": 0,
       "Sun": 0
     },
@@ -21,7 +21,7 @@
       "Tue": 0,
       "Wed": 0,
       "Thu": 0,
-      "Fri": 0,
+      "Fri": 1,
       "Sat": 0,
       "Sun": 0
     },
@@ -31,7 +31,7 @@
       "creator_fund": 0
     },
     "categories": {
-      "music": 0,
+      "music": 1,
       "movies": 0,
       "sports": 0,
       "gaming": 0,
