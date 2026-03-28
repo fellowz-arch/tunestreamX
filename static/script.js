@@ -941,8 +941,71 @@ function playMainVideo(videoId) {
     fullPlayerFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
 }
 
-// Live Sports
-let allLiveMatches = [];
+// Live TV
+let allTVChannels = [];
+
+async function openLiveTV() {
+    document.getElementById('liveTVPage').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    if (allTVChannels.length === 0) {
+        const res = await fetch('/live-tv');
+        allTVChannels = await res.json();
+    }
+    renderTV(allTVChannels);
+}
+
+function closeLiveTV() {
+    document.getElementById('liveTVPage').style.display = 'none';
+    document.body.style.overflow = '';
+    closeTVPlayer();
+}
+
+function renderTV(channels) {
+    const grid = document.getElementById('tvGrid');
+    if (!channels.length) {
+        grid.innerHTML = '<div style="color:#aaa;text-align:center;grid-column:1/-1;padding:40px;">No channels found</div>';
+        return;
+    }
+    grid.innerHTML = channels.map(ch => `
+        <div onclick="playTV('${ch.stream.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${ch.name.replace(/'/g,"\\'")}')"
+             style="background:#1a1a2e;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #2a2a4a;padding:12px;text-align:center;transition:all 0.2s;"
+             onmouseover="this.style.borderColor='#e63946';this.style.background='#1e1e3a'"
+             onmouseout="this.style.borderColor='#2a2a4a';this.style.background='#1a1a2e'">
+            <img src="${ch.logo}" style="width:60px;height:40px;object-fit:contain;margin-bottom:8px;" onerror="this.style.display='none'">
+            <div style="color:#fff;font-size:11px;font-weight:600;line-height:1.3;">${ch.name}</div>
+            <div style="background:#e63946;color:#fff;font-size:9px;padding:2px 6px;border-radius:3px;margin-top:6px;display:inline-block;">&#9679; LIVE</div>
+        </div>
+    `).join('');
+}
+
+function filterTV(cat) {
+    document.querySelectorAll('[id^="tvfilter_"]').forEach(b => b.style.background = '#2a2a4a');
+    const btn = document.getElementById('tvfilter_' + cat);
+    if (btn) btn.style.background = '#e63946';
+    if (cat === 'all') {
+        renderTV(allTVChannels);
+    } else {
+        renderTV(allTVChannels.filter(c => c.category === cat));
+    }
+}
+
+function searchTV(query) {
+    const q = query.toLowerCase();
+    renderTV(allTVChannels.filter(c => c.name.toLowerCase().includes(q) || c.category.toLowerCase().includes(q)));
+}
+
+function playTV(stream, name) {
+    document.getElementById('tvPlayerTitle').textContent = '\ud83d\udcfa ' + name;
+    document.getElementById('tvPlayerFrame').src = stream;
+    document.getElementById('tvPlayerDiv').style.display = 'block';
+}
+
+function closeTVPlayer() {
+    const frame = document.getElementById('tvPlayerFrame');
+    const div = document.getElementById('tvPlayerDiv');
+    if (frame) frame.src = '';
+    if (div) div.style.display = 'none';
+}
 
 async function openLiveSports() {
     document.getElementById('liveSportsPage').style.display = 'block';
