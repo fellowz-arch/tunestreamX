@@ -157,7 +157,7 @@ def fetch_videos(term, max_results=100):
                             'id': v['id'],
                             'title': v.get('title', 'Unknown'),
                             'duration': v.get('duration', 0),
-                            'thumbnail': f"https://i.ytimg.com/vi/{v['id']}/maxresdefault.jpg",
+                            'thumbnail': f"https://i.ytimg.com/vi/{v['id']}/hqdefault.jpg",
                             'channel': v.get('channel', 'Unknown'),
                             'views': random.randint(100000, 50000000),
                             'likes': random.randint(1000, 500000)
@@ -309,7 +309,7 @@ def football():
                 if title_el and link_el:
                     title = title_el.get_text(strip=True)
                     link = link_el.get('href', '')
-                    thumb = img_el.get('src', 'https://via.placeholder.com/320x180?text=Football') if img_el else 'https://via.placeholder.com/320x180?text=Football'
+                    thumb = img_el.get('src', 'https://placehold.co/320x180/1a1a2e/ffffff?text=Football') if img_el else 'https://placehold.co/320x180/1a1a2e/ffffff?text=Football'
                     vid_id = f'certify_{abs(hash(link)) % 1000000}'
                     if vid_id not in seen:
                         all_videos.append({
@@ -394,7 +394,7 @@ def live_football():
                 if img_el:
                     thumb = img_el.get('src') or img_el.get('data-src') or img_el.get('data-lazy-src', '')
                 if not thumb or len(thumb) < 10:
-                    thumb = f'https://via.placeholder.com/320x180/1a1a2e/ffffff?text={source_name.replace(" ","+")}'
+                    thumb = f'https://placehold.co/320x180/1a1a2e/ffffff?text={source_name.replace(" ","+")}'
                 uid = abs(hash(href)) % 100000000
                 if uid not in seen:
                     seen.add(uid)
@@ -434,7 +434,7 @@ def live_football():
                     seen.add(uid)
                     streams.append({
                         'id': f'lstv_{uid}', 'title': title,
-                        'thumbnail': 'https://via.placeholder.com/320x180/0a3d62/ffffff?text=LiveSoccerTV',
+                        'thumbnail': 'https://placehold.co/320x180/0a3d62/ffffff?text=LiveSoccerTV',
                         'channel': 'LiveSoccerTV', 'isLive': True,
                         'streamType': 'iframe',
                         'streamUrl': href or 'https://www.livesoccertv.com/schedules/',
@@ -487,7 +487,7 @@ def live_football():
                     if img_el:
                         thumb = img_el.get('src') or img_el.get('data-src') or img_el.get('data-lazy-src', '')
                     if not thumb or len(thumb) < 10:
-                        thumb = 'https://via.placeholder.com/320x180/c0392b/ffffff?text=CricFy+TV'
+                        thumb = 'https://placehold.co/320x180/c0392b/ffffff?text=CricFy+TV'
                     uid = abs(hash(href)) % 100000000
                     if uid not in seen:
                         seen.add(uid)
@@ -531,7 +531,7 @@ def live_football():
                 if img_el:
                     thumb = img_el.get('src') or img_el.get('data-src', '')
                 if not thumb:
-                    thumb = 'https://via.placeholder.com/320x180/003366/ffffff?text=SuperSport'
+                    thumb = 'https://placehold.co/320x180/003366/ffffff?text=SuperSport'
                 uid = abs(hash(title + href)) % 100000000
                 if uid not in seen and len(title) > 4:
                     seen.add(uid)
@@ -549,234 +549,29 @@ def live_football():
     if not streams:
         streams = [
             {'id': 'fb_lstv', 'title': '\u26bd Live Football Schedule',
-             'thumbnail': 'https://via.placeholder.com/320x180/0a3d62/ffffff?text=LiveSoccerTV',
+             'thumbnail': 'https://placehold.co/320x180/0a3d62/ffffff?text=LiveSoccerTV',
              'channel': 'LiveSoccerTV', 'isLive': True, 'streamType': 'iframe',
              'streamUrl': 'https://www.livesoccertv.com/schedules/',
              'pageUrl': 'https://www.livesoccertv.com/schedules/'},
             {'id': 'fb_epic', 'title': '\u26a1 EpicSports Live Football',
-             'thumbnail': 'https://via.placeholder.com/320x180/1a1a2e/ffffff?text=EpicSports',
+             'thumbnail': 'https://placehold.co/320x180/1a1a2e/ffffff?text=EpicSports',
              'channel': 'EpicSports', 'isLive': True, 'streamType': 'iframe',
              'streamUrl': 'https://epicsports.stream/football/',
              'pageUrl': 'https://epicsports.stream/football/'},
             {'id': 'fb_ctv', 'title': '\U0001f4fa CricFy TV Football',
-             'thumbnail': 'https://via.placeholder.com/320x180/1a1a2e/ffffff?text=CricFyTV',
+             'thumbnail': 'https://placehold.co/320x180/1a1a2e/ffffff?text=CricFyTV',
              'channel': 'CricFy TV', 'isLive': True, 'streamType': 'iframe',
              'streamUrl': 'https://cricfy.tv/football/',
              'pageUrl': 'https://cricfy.tv/football/'},
             {'id': 'fb_ss', 'title': '\U0001f3c6 SuperSport Football',
-             'thumbnail': 'https://via.placeholder.com/320x180/003366/ffffff?text=SuperSport',
+             'thumbnail': 'https://placehold.co/320x180/003366/ffffff?text=SuperSport',
              'channel': 'SuperSport', 'isLive': True, 'streamType': 'iframe',
              'streamUrl': 'https://supersport.com/football',
              'pageUrl': 'https://supersport.com/football'},
         ]
 
     return jsonify(streams)
-    import requests
-    from bs4 import BeautifulSoup
-    import re
-    import datetime
 
-    streams = []
-    seen = set()
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Referer': 'https://google.com'
-    }
-
-    # --- CertifyTV ---
-    try:
-        r = requests.get('https://certifytv.com/category/football/', headers=headers, timeout=10)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        for article in soup.select('article')[:20]:
-            title_el = article.select_one('h2, h3, .entry-title')
-            link_el = article.select_one('a[href]')
-            img_el = article.select_one('img')
-            if title_el and link_el:
-                title = title_el.get_text(strip=True)
-                href = link_el.get('href', '')
-                thumb = img_el.get('src') or img_el.get('data-src', '') if img_el else ''
-                if not thumb or 'placeholder' in thumb:
-                    thumb = 'https://certifytv.com/wp-content/uploads/2021/01/certifytv.png'
-                uid = f'ctv_{abs(hash(href)) % 10000000}'
-                if uid not in seen and title and href:
-                    streams.append({
-                        'id': uid, 'title': title, 'thumbnail': thumb,
-                        'channel': 'CertifyTV', 'isLive': True,
-                        'streamType': 'page', 'streamUrl': href, 'pageUrl': href,
-                        'status': 'live'
-                    })
-                    seen.add(uid)
-    except Exception as e:
-        print(f'CertifyTV error: {e}')
-
-    # --- EpicSports ---
-    for epic_url in ['https://epicsports.stream/', 'https://epicsports.net/']:
-        try:
-            r = requests.get(epic_url, headers=headers, timeout=10)
-            soup = BeautifulSoup(r.text, 'html.parser')
-            for item in soup.select('article, .match, .event, .game, li, .item')[:20]:
-                title_el = item.select_one('h2, h3, h4, .title, a')
-                link_el = item.select_one('a[href]')
-                img_el = item.select_one('img')
-                if title_el and link_el:
-                    title = title_el.get_text(strip=True)
-                    href = link_el.get('href', '')
-                    if not href.startswith('http'):
-                        href = epic_url.rstrip('/') + '/' + href.lstrip('/')
-                    thumb = img_el.get('src') or img_el.get('data-src', '') if img_el else ''
-                    if not thumb:
-                        thumb = 'https://via.placeholder.com/320x180/e63946/fff?text=EpicSports'
-                    uid = f'epic_{abs(hash(href)) % 10000000}'
-                    if uid not in seen and title and len(title) > 4 and href:
-                        streams.append({
-                            'id': uid, 'title': title, 'thumbnail': thumb,
-                            'channel': 'EpicSports', 'isLive': True,
-                            'streamType': 'page', 'streamUrl': href, 'pageUrl': href,
-                            'status': 'live'
-                        })
-                        seen.add(uid)
-            if streams:
-                break
-        except Exception as e:
-            print(f'EpicSports error {epic_url}: {e}')
-
-    # --- SuperSport (schedule/fixtures) ---
-    try:
-        r = requests.get('https://supersport.com/football', headers=headers, timeout=10)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        for item in soup.select('.fixture, .match, .event, article, .card')[:20]:
-            title_el = item.select_one('h2, h3, h4, .title, .match-title, .teams')
-            link_el = item.select_one('a[href]')
-            img_el = item.select_one('img')
-            if title_el:
-                title = title_el.get_text(strip=True)
-                href = link_el.get('href', '') if link_el else 'https://supersport.com/football'
-                if href and not href.startswith('http'):
-                    href = 'https://supersport.com' + href
-                thumb = img_el.get('src', '') if img_el else ''
-                if not thumb:
-                    thumb = 'https://via.placeholder.com/320x180/1a1a2e/fff?text=SuperSport'
-                uid = f'ss_{abs(hash(title)) % 10000000}'
-                if uid not in seen and title and len(title) > 4:
-                    streams.append({
-                        'id': uid, 'title': title, 'thumbnail': thumb,
-                        'channel': 'SuperSport', 'isLive': False,
-                        'streamType': 'page', 'streamUrl': href, 'pageUrl': href,
-                        'status': 'upcoming'
-                    })
-                    seen.add(uid)
-    except Exception as e:
-        print(f'SuperSport error: {e}')
-
-    # --- TV96 / HDStreamz ---
-    for site_url, site_name, site_id in [
-        ('https://tv96.net/', 'TV96', 'tv96'),
-        ('https://hdstreamz.net/', 'HD Streamz', 'hds')
-    ]:
-        try:
-            r = requests.get(site_url, headers=headers, timeout=10)
-            soup = BeautifulSoup(r.text, 'html.parser')
-            for item in soup.select('article, .post, .card, .match, li.item')[:15]:
-                title_el = item.select_one('h2, h3, h4, .title, .entry-title')
-                link_el = item.select_one('a[href]')
-                img_el = item.select_one('img')
-                if title_el and link_el:
-                    title = title_el.get_text(strip=True)
-                    href = link_el.get('href', '')
-                    if not href.startswith('http'):
-                        href = site_url.rstrip('/') + '/' + href.lstrip('/')
-                    thumb = img_el.get('src') or img_el.get('data-src', '') if img_el else ''
-                    if not thumb:
-                        thumb = f'https://via.placeholder.com/320x180/1a1a2e/fff?text={site_name}'
-                    uid = f'{site_id}_{abs(hash(href)) % 10000000}'
-                    if uid not in seen and title and len(title) > 4:
-                        streams.append({
-                            'id': uid, 'title': title, 'thumbnail': thumb,
-                            'channel': site_name, 'isLive': True,
-                            'streamType': 'page', 'streamUrl': href, 'pageUrl': href,
-                            'status': 'live'
-                        })
-                        seen.add(uid)
-        except Exception as e:
-            print(f'{site_name} error: {e}')
-
-    # --- Fallback: use livesoccertv schedule API ---
-    if len(streams) < 5:
-        try:
-            today = datetime.datetime.now().strftime('%Y-%m-%d')
-            r = requests.get(f'https://www.livesoccertv.com/schedules/{today}/', headers=headers, timeout=10)
-            soup = BeautifulSoup(r.text, 'html.parser')
-            for row in soup.select('tr.matchrow, .match-row, tr')[:30]:
-                teams = row.select('.home, .away, .team, td')
-                time_el = row.select_one('.time, .match-time, td')
-                if len(teams) >= 2:
-                    home = teams[0].get_text(strip=True)
-                    away = teams[-1].get_text(strip=True)
-                    match_time = time_el.get_text(strip=True) if time_el else ''
-                    if home and away and home != away and len(home) > 2:
-                        title = f'{home} vs {away}'
-                        if match_time:
-                            title = f'{match_time} - {title}'
-                        uid = f'lstv_{abs(hash(title)) % 10000000}'
-                        if uid not in seen:
-                            streams.append({
-                                'id': uid, 'title': title,
-                                'thumbnail': 'https://via.placeholder.com/320x180/1a1a2e/fff?text=Live+Football',
-                                'channel': 'LiveSoccerTV', 'isLive': True,
-                                'streamType': 'page',
-                                'streamUrl': f'https://www.livesoccertv.com/schedules/{today}/',
-                                'pageUrl': f'https://www.livesoccertv.com/schedules/{today}/',
-                                'status': 'live'
-                            })
-                            seen.add(uid)
-        except Exception as e:
-            print(f'LiveSoccerTV fallback error: {e}')
-
-    # Sort: live first, then upcoming
-    streams.sort(key=lambda x: 0 if x.get('status') == 'live' else 1)
-
-    return jsonify(streams if streams else [{
-        'id': 'fallback_1', 'title': '🔴 Live Football Schedule',
-        'thumbnail': 'https://via.placeholder.com/320x180/e63946/fff?text=Live+Football',
-        'channel': 'LiveSoccerTV', 'isLive': True,
-        'streamType': 'page',
-        'streamUrl': 'https://www.livesoccertv.com/schedules/',
-        'pageUrl': 'https://www.livesoccertv.com/schedules/',
-        'status': 'live'
-    }])
-
-
-@app.route('/certify-layout')
-def certify_layout():
-    import requests
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'}
-    r = requests.get('https://certifytv.com', headers=headers, timeout=12)
-    return r.text
-def proxy_stream():
-    import requests
-    from bs4 import BeautifulSoup
-    import re
-    url = request.args.get('url')
-    if not url:
-        return jsonify({'error': 'No URL provided'}), 400
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'}
-        r = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        m3u8 = re.search(r'["\']([^"\' ]+\.m3u8[^"\' ]*)["\']', r.text)
-        if m3u8:
-            return jsonify({'type': 'm3u8', 'url': m3u8.group(1)})
-        for iframe in soup.select('iframe[src]'):
-            src = iframe.get('src', '')
-            if src and len(src) > 10 and 'google' not in src and 'facebook' not in src:
-                if not src.startswith('http'):
-                    src = 'https:' + src
-                return jsonify({'type': 'iframe', 'url': src})
-        return jsonify({'type': 'none', 'url': None})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 @app.route('/wrestling')
 def wrestling():

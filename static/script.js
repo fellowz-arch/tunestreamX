@@ -161,7 +161,7 @@ function displayResults(videos) {
         const img = document.createElement('img');
         img.src = v.thumbnail;
         img.alt = v.title;
-        img.onerror = function() { this.src = 'https://via.placeholder.com/200x200?text=No+Image'; };
+        img.onerror = function() { this.src = 'https://placehold.co/200x200/1a1a2e/ffffff?text=No+Image'; };
         
         const info = document.createElement('div');
         info.className = 'result-info';
@@ -981,7 +981,7 @@ function renderLiveMatches(matches) {
              onmouseover="this.style.borderColor='#e63946';this.style.transform='translateY(-2px)'"
              onmouseout="this.style.borderColor='#303030';this.style.transform='translateY(0)'">
             <div style="position:relative;">
-                <img src="${m.thumbnail}" style="width:100%;height:160px;object-fit:cover;" onerror="this.src='https://via.placeholder.com/320x160/1a1a2e/ffffff?text=Live+Match'">
+                <img src="${m.thumbnail}" style="width:100%;height:160px;object-fit:cover;" onerror="this.src='https://placehold.co/320x160/1a1a2e/ffffff?text=Live+Match'">
                 <span style="position:absolute;top:8px;left:8px;background:#e63946;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">&#128308; LIVE</span>
                 <span style="position:absolute;top:8px;right:8px;background:${color};color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;">${m.channel}</span>
             </div>

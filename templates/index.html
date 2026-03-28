@@ -166,6 +166,18 @@
             </nav>
         </div>
     </div>
+    <!-- Install Banner -->
+    <div id="installBanner" style="display:none;position:fixed;bottom:70px;left:0;right:0;background:#667eea;color:#fff;padding:12px 20px;z-index:9998;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <img src="/static/TunestreamX logo.png" style="width:32px;height:32px;border-radius:6px;">
+            <span style="font-size:14px;font-weight:bold;">Install TuneStreamX App</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <button onclick="triggerInstall()" style="background:#fff;color:#667eea;border:none;padding:8px 16px;border-radius:6px;font-weight:bold;cursor:pointer;">Install</button>
+            <button onclick="document.getElementById('installBanner').style.display='none'" style="background:rgba(255,255,255,0.2);color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">✕</button>
+        </div>
+    </div>
+
     <!-- Live Sports Full Page -->
     <div id="liveSportsPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0f0f0f;z-index:3000;overflow-y:auto;">
         <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:#181818;border-bottom:1px solid #303030;position:sticky;top:0;z-index:10;">
@@ -376,25 +388,32 @@
         let deferredPrompt;
         
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('beforeinstallprompt fired');
             e.preventDefault();
             deferredPrompt = e;
+            console.log('beforeinstallprompt fired');
             
-            setTimeout(() => {
-                if (deferredPrompt) {
-                    console.log('Showing install prompt');
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        console.log('User choice:', choiceResult.outcome);
-                        deferredPrompt = null;
-                    });
-                }
-            }, 6000);
+            // Show install banner button
+            const banner = document.getElementById('installBanner');
+            if (banner) banner.style.display = 'flex';
         });
+        
+        function triggerInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    console.log('User choice:', choiceResult.outcome);
+                    deferredPrompt = null;
+                    const banner = document.getElementById('installBanner');
+                    if (banner) banner.style.display = 'none';
+                });
+            }
+        }
         
         window.addEventListener('appinstalled', () => {
             console.log('App installed successfully');
             fetch('/track/install', { method: 'POST' });
+            const banner = document.getElementById('installBanner');
+            if (banner) banner.style.display = 'none';
         });
     </script>
 </body>
