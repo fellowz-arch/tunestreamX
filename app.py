@@ -107,30 +107,20 @@ def creator_login():
 
 @app.route('/test')
 def test():
-    return jsonify({
-        'status': 'ok',
-        'message': 'API is working',
-        'test_songs': [
-            {
-                'id': 'dQw4w9WgXcQ',
-                'title': 'Test Song 1',
-                'duration': 213,
-                'thumbnail': 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-                'channel': 'Test Artist',
-                'views': 1000000,
-                'likes': 50000
-            },
-            {
-                'id': 'kJQP7kiw5Fk',
-                'title': 'Test Song 2',
-                'duration': 180,
-                'thumbnail': 'https://i.ytimg.com/vi/kJQP7kiw5Fk/hqdefault.jpg',
-                'channel': 'Test Artist 2',
-                'views': 2000000,
-                'likes': 100000
-            }
-        ]
-    })
+    return jsonify({'status': 'ok', 'message': 'API is working'})
+
+@app.route('/debug-cricfy')
+def debug_cricfy():
+    import requests
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'}
+    results = {}
+    for url in ['https://cricfy.tv/', 'https://cricfy.tv/football/', 'https://cricfy.tv/live/']:
+        try:
+            r = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
+            results[url] = {'status': r.status_code, 'final_url': r.url, 'html': r.text[:5000]}
+        except Exception as e:
+            results[url] = {'error': str(e)}
+    return jsonify(results)
 
 @app.route('/')
 def index():
@@ -571,20 +561,6 @@ def live_football():
         ]
 
     return jsonify(streams)
-
-
-@app.route('/debug-cricfy')
-def debug_cricfy():
-    import requests
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'}
-    results = {}
-    for url in ['https://cricfy.tv/', 'https://cricfy.tv/football/', 'https://cricfy.tv/live/', 'https://cricfy.tv/upcoming/']:
-        try:
-            r = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
-            results[url] = {'status': r.status_code, 'final_url': r.url, 'html': r.text[:4000]}
-        except Exception as e:
-            results[url] = {'error': str(e)}
-    return jsonify(results)
 
 
 @app.route('/wrestling')
