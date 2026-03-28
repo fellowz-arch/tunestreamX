@@ -608,26 +608,29 @@ def stream_proxy():
 def test_streams():
     import requests
     streams = [
-        ('DW EN', 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8'),
         ('DW DE', 'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8'),
         ('DW AR', 'https://dwamdstream105.akamaized.net/hls/live/2015531/dwstream105/index.m3u8'),
-        ('DW ES', 'https://dwamdstream106.akamaized.net/hls/live/2015532/dwstream106/index.m3u8'),
-        ('Real Madrid', 'https://rmtv-live.akamaized.net/hls/live/2093126/rmtv/index.m3u8'),
-        ('NASA', 'https://nasa-i.akamaihd.net/hls/live/253565/NASA-NTV1-HLS/master.m3u8'),
-        ('Red Bull', 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8'),
-        ('AJE akamai', 'https://aljazeera-aljazeera-english-live.akamaized.net/hls/live/2027975/aljazeera-english/master.m3u8'),
-        ('BBC akamai', 'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/pc_hd_abr_v2.m3u8'),
-        ('Euronews akamai', 'https://euronews-euronews-en-live.akamaized.net/hls/live/2037190/euronews-en/master.m3u8'),
-        ('France24 akamai', 'https://f24hls-i.akamaihd.net/hls/live/221147/F24_EN_LO_HLS/master.m3u8'),
+        ('NASA TV', 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8'),
+        ('NASA TV2', 'https://ntv2.akamaized.net/hls/live/2014076/NASA-NTV2-HLS/master.m3u8'),
+        ('Red Bull2', 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-DE/master.m3u8'),
+        ('Red Bull3', 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-US/master.m3u8'),
+        ('BBC World', 'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_world_service/pc_hd_abr_v2.m3u8'),
+        ('BBC Radio', 'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_radio_one/pc_hd_abr_v2.m3u8'),
+        ('DW FR', 'https://dwamdstream103.akamaized.net/hls/live/2015529/dwstream103/index.m3u8'),
+        ('Ruptly', 'https://ruptly-live.akamaized.net/hls/live/2028267/ruptly/master.m3u8'),
+        ('UN Web TV', 'https://webtv.un.org/en/asset/k1m/k1mzs3bkq4'),
+        ('NASA Public', 'https://nasa-i.akamaihd.net/hls/live/253565/NASA-NTV1-HLS/master.m3u8'),
+        ('DW+', 'https://dwamdstream109.akamaized.net/hls/live/2015535/dwstream109/index.m3u8'),
+        ('DW++', 'https://dwamdstream110.akamaized.net/hls/live/2015536/dwstream110/index.m3u8'),
     ]
     results = {}
     h = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     for name, url in streams:
         try:
             r = requests.get(url, timeout=8, headers=h)
-            results[name] = {'status': r.status_code, 'ok': r.status_code == 200, 'snippet': r.text[:80]}
+            results[name] = {'ok': r.status_code == 200, 'status': r.status_code, 'snippet': r.text[:50]}
         except Exception as e:
-            results[name] = {'status': 'error', 'ok': False, 'error': str(e)[:60]}
+            results[name] = {'ok': False, 'status': 'error', 'error': str(e)[:50]}
     return jsonify(results)
 
 
@@ -641,6 +644,8 @@ def live_tv():
         {'id':'bbc','name':'BBC News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_News_2019.svg/200px-BBC_News_2019.svg.png','category':'news','stream':'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/pc_hd_abr_v2.m3u8'},
         # Sports - confirmed working
         {'id':'redbull','name':'Red Bull TV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Red_Bull_logo.svg/200px-Red_Bull_logo.svg.png','category':'sports','stream':'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8'},
+        # Entertainment - confirmed working
+        {'id':'nasa','name':'NASA TV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/200px-NASA_logo.svg.png','category':'entertainment','stream':'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8'},
     ]
     return jsonify(channels)
 
