@@ -942,9 +942,66 @@ function playMainVideo(videoId) {
 }
 
 // Live Sports
-function openLiveSports() {
+let allLiveMatches = [];
+
+async function openLiveSports() {
     document.getElementById('liveSportsPage').style.display = 'block';
     document.body.style.overflow = 'hidden';
+    await loadLiveMatches();
+}
+
+async function loadLiveMatches() {
+    const grid = document.getElementById('liveMatchesGrid');
+    grid.innerHTML = '<div style="color:#aaa;text-align:center;grid-column:1/-1;padding:40px;">&#128308; Loading live matches from all sources...</div>';
+    try {
+        const res = await fetch('/live-football');
+        allLiveMatches = await res.json();
+        renderLiveMatches(allLiveMatches);
+    } catch(e) {
+        grid.innerHTML = '<div style="color:#e63946;text-align:center;grid-column:1/-1;padding:40px;">Failed to load matches. Please try again.</div>';
+    }
+}
+
+function renderLiveMatches(matches) {
+    const grid = document.getElementById('liveMatchesGrid');
+    if (!matches || matches.length === 0) {
+        grid.innerHTML = '<div style="color:#aaa;text-align:center;grid-column:1/-1;padding:40px;">No matches found right now. Check back soon.</div>';
+        return;
+    }
+    const sourceColors = {
+        'LiveSoccerTV': '#0a3d62', 'EpicSports': '#6c3483',
+        'CertifyTV': '#1a5276', 'HD Streamz': '#145a32',
+        'TV96': '#7b241c', 'SuperSport': '#003366'
+    };
+    grid.innerHTML = matches.map(m => {
+        const color = sourceColors[m.channel] || '#181818';
+        return `
+        <div onclick="openStream('${m.streamUrl}','${m.title.replace(/'/g,"\\'")}')"
+             style="background:#181818;border-radius:12px;overflow:hidden;cursor:pointer;border:1px solid #303030;transition:all 0.2s;"
+             onmouseover="this.style.borderColor='#e63946';this.style.transform='translateY(-2px)'"
+             onmouseout="this.style.borderColor='#303030';this.style.transform='translateY(0)'">
+            <div style="position:relative;">
+                <img src="${m.thumbnail}" style="width:100%;height:160px;object-fit:cover;" onerror="this.src='https://via.placeholder.com/320x160/1a1a2e/ffffff?text=Live+Match'">
+                <span style="position:absolute;top:8px;left:8px;background:#e63946;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">&#128308; LIVE</span>
+                <span style="position:absolute;top:8px;right:8px;background:${color};color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;">${m.channel}</span>
+            </div>
+            <div style="padding:12px;">
+                <div style="color:#fff;font-weight:bold;font-size:14px;line-height:1.4;">${m.title}</div>
+                <div style="color:#aaa;font-size:12px;margin-top:4px;">${m.channel}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function filterLive(source) {
+    document.querySelectorAll('[id^="filter_"]').forEach(b => b.style.background = '#303030');
+    const btn = document.getElementById('filter_' + (source === 'all' ? 'all' : source.toLowerCase().replace(/ /g,'_')));
+    if (btn) btn.style.background = '#e63946';
+    if (source === 'all') {
+        renderLiveMatches(allLiveMatches);
+    } else {
+        renderLiveMatches(allLiveMatches.filter(m => m.channel === source));
+    }
 }
 
 function closeLiveSports() {
@@ -966,8 +1023,8 @@ function openStream(url, title) {
 function closeLiveStreamFrame() {
     const frameDiv = document.getElementById('liveStreamFrame');
     const iframe = document.getElementById('liveStreamIframe');
-    iframe.src = '';
-    frameDiv.style.display = 'none';
+    if (iframe) iframe.src = '';
+    if (frameDiv) frameDiv.style.display = 'none';
 }
 
 // Music Radio
