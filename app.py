@@ -422,18 +422,18 @@ def live_football():
 
     # StreamSports / SportsHub as reliable backup for live football
     for site_url, site_name, site_base in [
-        ('https://streamsports.me/', 'StreamSports', 'https://streamsports.me'),
-        ('https://sportshub.stream/football', 'SportsHub', 'https://sportshub.stream'),
+        ('https://streamsports.net/', 'StreamSports', 'https://streamsports.net'),
         ('https://soccerstreams-100.com/', 'SoccerStreams', 'https://soccerstreams-100.com'),
+        ('https://reddit.soccer-streams.com/', 'SoccerStreams', 'https://reddit.soccer-streams.com'),
     ]:
         if len([s for s in streams if s['isLive']]) >= 20:
             break
         streams += scrape_source(site_url, site_name, site_base)
 
     # EpicSports
-    streams += scrape_source('https://epicsports.stream/football/', 'EpicSports', 'https://epicsports.stream')
+    streams += scrape_source('https://epicsports.net/football/', 'EpicSports', 'https://epicsports.net')
     if not [s for s in streams if s['channel'] == 'EpicSports']:
-        streams += scrape_source('https://epicsports.stream/', 'EpicSports', 'https://epicsports.stream')
+        streams += scrape_source('https://epicsports.net/', 'EpicSports', 'https://epicsports.net')
 
     # CricFy TV - scrape live and upcoming matches
     try:
@@ -530,6 +530,49 @@ def live_football():
                     })
     except Exception as e:
         print(f'SuperSport error: {e}')
+
+    # TheSportsDB free API - no token needed, real live/upcoming matches
+    try:
+        import datetime
+        today = datetime.datetime.utcnow().strftime('%Y-%m-%d')
+        api_r = requests.get(
+            f'https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d={today}&s=Soccer',
+            headers=headers, timeout=8
+        )
+        if api_r.status_code == 200:
+            data = api_r.json()
+            for match in (data.get('events') or [])[:40]:
+                home = match.get('strHomeTeam', '')
+                away = match.get('strAwayTeam', '')
+                league = match.get('strLeague', '')
+                match_time = match.get('strTime', '') or match.get('strTimestamp', '')[:16]
+                status = match.get('strStatus', '').lower()
+                thumb = match.get('strThumb') or match.get('strBanner') or ''
+                is_live = status in ['live', 'in progress', '1h', '2h', 'ht']
+                is_upcoming = not is_live
+                if not home or not away:
+                    continue
+                title = f'{home} vs {away}'
+                if league:
+                    title = f'{league}: {title}'
+                if match_time:
+                    title = f'\U0001f550 {match_time} | {title}'
+                if not thumb or len(thumb) < 10:
+                    thumb = f'https://placehold.co/320x180/1a5276/ffffff?text={home[:8].replace(" ","+")}+vs'
+                uid = abs(hash(home + away + today)) % 100000000
+                if uid not in seen:
+                    seen.add(uid)
+                    streams.append({
+                        'id': f'tsdb_{uid}', 'title': title, 'thumbnail': thumb,
+                        'channel': league or 'Live Football',
+                        'isLive': is_live, 'isUpcoming': is_upcoming,
+                        'matchTime': match_time,
+                        'streamType': 'iframe',
+                        'streamUrl': 'https://cricfy.tv/',
+                        'pageUrl': 'https://cricfy.tv/'
+                    })
+    except Exception as e:
+        print(f'TheSportsDB error: {e}')
 
     # Fallback
     if not streams:
