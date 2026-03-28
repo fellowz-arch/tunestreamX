@@ -80,9 +80,13 @@
                 <span class="icon">⚽</span>
                 <span class="label">Football</span>
             </a>
-            <a class="sidebar-item" onclick="loadTab('live-football', this)">
+            <a class="sidebar-item" onclick="openLiveSports()">
                 <span class="icon">🔴</span>
                 <span class="label">Live Sports</span>
+            </a>
+            <a class="sidebar-item" onclick="openMusicRadio()">
+                <span class="icon">🎸</span>
+                <span class="label">Music Radio</span>
             </a>
             <a class="sidebar-item" onclick="loadTab('wrestling', this)">
                 <span class="icon">🤼</span>
@@ -143,9 +147,13 @@
                     <span class="icon">⚽</span>
                     <span class="label">Football</span>
                 </div>
-                <div class="nav-item" onclick="loadTab('movies', this)">
-                    <span class="icon">🎬</span>
-                    <span class="label">Movies</span>
+                <div class="nav-item" onclick="openLiveSports()">
+                    <span class="icon">🔴</span>
+                    <span class="label">Live</span>
+                </div>
+                <div class="nav-item" onclick="openMusicRadio()">
+                    <span class="icon">🎸</span>
+                    <span class="label">Radio</span>
                 </div>
                 <div class="nav-item" onclick="loadTab('library', this)">
                     <span class="icon">📚</span>
@@ -158,7 +166,115 @@
             </nav>
         </div>
     </div>
-    <!-- Full Player - YouTube Style -->
+    <!-- Live Sports Full Page -->
+    <div id="liveSportsPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0f0f0f;z-index:3000;overflow-y:auto;">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:#181818;border-bottom:1px solid #303030;">
+            <button onclick="closeLiveSports()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>
+            <span style="color:#e63946;font-weight:bold;font-size:18px;">&#128308; Live Sports</span>
+        </div>
+        <div style="padding:20px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;">
+                <div onclick="openStream('https://www.livesoccertv.com','LiveSoccerTV')" style="background:#181818;border-radius:12px;padding:20px;cursor:pointer;border:1px solid #303030;transition:all 0.2s;" onmouseover="this.style.borderColor='#e63946'" onmouseout="this.style.borderColor='#303030'">
+                    <div style="font-size:36px;margin-bottom:10px;">⚽</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">Live Soccer TV</div>
+                    <div style="color:#aaa;font-size:13px;margin-top:4px;">Live football streams worldwide</div>
+                    <span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE</span>
+                </div>
+                <div onclick="openStream('https://www.soccerstreams100.com','Soccer Streams')" style="background:#181818;border-radius:12px;padding:20px;cursor:pointer;border:1px solid #303030;transition:all 0.2s;" onmouseover="this.style.borderColor='#e63946'" onmouseout="this.style.borderColor='#303030'">
+                    <div style="font-size:36px;margin-bottom:10px;">🏆</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">Soccer Streams</div>
+                    <div style="color:#aaa;font-size:13px;margin-top:4px;">Free soccer live streams</div>
+                    <span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE</span>
+                </div>
+                <div onclick="openStream('https://www.cricfree.sc','CricFree')" style="background:#181818;border-radius:12px;padding:20px;cursor:pointer;border:1px solid #303030;transition:all 0.2s;" onmouseover="this.style.borderColor='#e63946'" onmouseout="this.style.borderColor='#303030'">
+                    <div style="font-size:36px;margin-bottom:10px;">🏏</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">CricFree</div>
+                    <div style="color:#aaa;font-size:13px;margin-top:4px;">Cricket & multi-sport streams</div>
+                    <span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE</span>
+                </div>
+                <div onclick="openStream('https://www.sportrar.tv','SportRAR')" style="background:#181818;border-radius:12px;padding:20px;cursor:pointer;border:1px solid #303030;transition:all 0.2s;" onmouseover="this.style.borderColor='#e63946'" onmouseout="this.style.borderColor='#303030'">
+                    <div style="font-size:36px;margin-bottom:10px;">📺</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">SportRAR TV</div>
+                    <div style="color:#aaa;font-size:13px;margin-top:4px;">All sports live streams</div>
+                    <span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE</span>
+                </div>
+                <div onclick="openStream('https://www.livetv.sx/enx','LiveTV')" style="background:#181818;border-radius:12px;padding:20px;cursor:pointer;border:1px solid #303030;transition:all 0.2s;" onmouseover="this.style.borderColor='#e63946'" onmouseout="this.style.borderColor='#303030'">
+                    <div style="font-size:36px;margin-bottom:10px;">🎯</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">LiveTV</div>
+                    <div style="color:#aaa;font-size:13px;margin-top:4px;">Football, tennis, basketball live</div>
+                    <span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE</span>
+                </div>
+                <div onclick="openStream('https://www.epicsports.stream','EpicSports')" style="background:#181818;border-radius:12px;padding:20px;cursor:pointer;border:1px solid #303030;transition:all 0.2s;" onmouseover="this.style.borderColor='#e63946'" onmouseout="this.style.borderColor='#303030'">
+                    <div style="font-size:36px;margin-bottom:10px;">⚡</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">EpicSports</div>
+                    <div style="color:#aaa;font-size:13px;margin-top:4px;">Epic live sports streams</div>
+                    <span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE</span>
+                </div>
+            </div>
+            <div id="liveStreamFrame" style="display:none;margin-top:20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <span id="liveStreamTitle" style="color:#fff;font-weight:bold;"></span>
+                    <button onclick="closeLiveStreamFrame()" style="background:#303030;border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;">Close Stream</button>
+                </div>
+                <iframe id="liveStreamIframe" style="width:100%;height:70vh;border:none;border-radius:12px;background:#000;" allowfullscreen allow="autoplay"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Music Radio Full Page -->
+    <div id="musicRadioPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0f0f0f;z-index:3000;overflow-y:auto;">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:#181818;border-bottom:1px solid #303030;">
+            <button onclick="closeMusicRadio()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>
+            <span style="color:#667eea;font-weight:bold;font-size:18px;">&#127925; Music Radio</span>
+        </div>
+        <div style="padding:20px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+                <div onclick="playRadio('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1','Lofi Hip Hop Radio')" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="font-size:36px;margin-bottom:10px;">🎵</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">Lofi Hip Hop</div>
+                    <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-top:4px;">Chill beats to study/relax</div>
+                    <span style="background:rgba(255,255,255,0.2);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE RADIO</span>
+                </div>
+                <div onclick="playRadio('https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=1','Relaxing Jazz')" style="background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:12px;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="font-size:36px;margin-bottom:10px;">🎷</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">Jazz Radio</div>
+                    <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-top:4px;">Smooth jazz 24/7</div>
+                    <span style="background:rgba(255,255,255,0.2);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE RADIO</span>
+                </div>
+                <div onclick="playRadio('https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1','Lofi Chill')" style="background:linear-gradient(135deg,#4facfe,#00f2fe);border-radius:12px;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="font-size:36px;margin-bottom:10px;">🌊</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">Chill Vibes</div>
+                    <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-top:4px;">Relaxing music 24/7</div>
+                    <span style="background:rgba(255,255,255,0.2);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE RADIO</span>
+                </div>
+                <div onclick="playRadio('https://www.youtube.com/embed/DWcJFNfaw9c?autoplay=1','Deep House')" style="background:linear-gradient(135deg,#43e97b,#38f9d7);border-radius:12px;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="font-size:36px;margin-bottom:10px;">🎧</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">Deep House</div>
+                    <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-top:4px;">Electronic music 24/7</div>
+                    <span style="background:rgba(255,255,255,0.2);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE RADIO</span>
+                </div>
+                <div onclick="playRadio('https://www.youtube.com/embed/36YnV9STBqc?autoplay=1','Piano Radio')" style="background:linear-gradient(135deg,#fa709a,#fee140);border-radius:12px;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="font-size:36px;margin-bottom:10px;">🎹</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">Piano Radio</div>
+                    <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-top:4px;">Classical piano 24/7</div>
+                    <span style="background:rgba(255,255,255,0.2);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE RADIO</span>
+                </div>
+                <div onclick="playRadio('https://www.youtube.com/embed/rUxyKA_-grg?autoplay=1','Afrobeats Radio')" style="background:linear-gradient(135deg,#f7971e,#ffd200);border-radius:12px;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="font-size:36px;margin-bottom:10px;">🥁</div>
+                    <div style="color:#fff;font-weight:bold;font-size:16px;">Afrobeats Radio</div>
+                    <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-top:4px;">African beats 24/7</div>
+                    <span style="background:rgba(255,255,255,0.2);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:8px;display:inline-block;">&#128308; LIVE RADIO</span>
+                </div>
+            </div>
+            <div id="radioPlayerDiv" style="display:none;margin-top:20px;background:#181818;border-radius:12px;padding:20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <span id="radioTitle" style="color:#fff;font-weight:bold;font-size:16px;"></span>
+                    <button onclick="stopRadio()" style="background:#e63946;border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;">Stop</button>
+                </div>
+                <iframe id="radioIframe" style="width:100%;height:200px;border:none;border-radius:8px;" allowfullscreen allow="autoplay"></iframe>
+            </div>
+        </div>
+    </div>
     <div id="fullPlayer" class="full-player">
         <button class="close-full-player" onclick="closePlayer()">✕</button>
         <div class="watch-page">
@@ -307,7 +423,6 @@
         window.addEventListener('appinstalled', () => {
             console.log('App installed successfully');
             fetch('/track/install', { method: 'POST' });
-        });
         });
     </script>
 </body>

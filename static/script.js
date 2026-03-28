@@ -940,3 +940,61 @@ function playMainVideo(videoId) {
     fullPlayerFrame.style.display = 'block';
     fullPlayerFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
 }
+
+// Live Sports
+function openLiveSports() {
+    document.getElementById('liveSportsPage').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLiveSports() {
+    document.getElementById('liveSportsPage').style.display = 'none';
+    document.body.style.overflow = '';
+    closeLiveStreamFrame();
+}
+
+function openStream(url, title) {
+    const frameDiv = document.getElementById('liveStreamFrame');
+    const iframe = document.getElementById('liveStreamIframe');
+    const titleEl = document.getElementById('liveStreamTitle');
+    titleEl.textContent = title;
+    iframe.src = url;
+    frameDiv.style.display = 'block';
+    frameDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeLiveStreamFrame() {
+    const frameDiv = document.getElementById('liveStreamFrame');
+    const iframe = document.getElementById('liveStreamIframe');
+    iframe.src = '';
+    frameDiv.style.display = 'none';
+}
+
+// Music Radio
+function openMusicRadio() {
+    document.getElementById('musicRadioPage').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeMusicRadio() {
+    stopRadio();
+    document.getElementById('musicRadioPage').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function playRadio(url, title) {
+    const playerDiv = document.getElementById('radioPlayerDiv');
+    const iframe = document.getElementById('radioIframe');
+    const titleEl = document.getElementById('radioTitle');
+    titleEl.textContent = '🎵 Now Playing: ' + title;
+    iframe.src = url;
+    playerDiv.style.display = 'block';
+    playerDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function stopRadio() {
+    const iframe = document.getElementById('radioIframe');
+    const playerDiv = document.getElementById('radioPlayerDiv');
+    iframe.src = '';
+    playerDiv.style.display = 'none';
+}
