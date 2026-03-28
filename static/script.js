@@ -995,63 +995,58 @@ function renderLiveMatches(matches) {
 }
 
 function matchCard(m) {
-    // Parse "Team A vs Team B" from title
-    const titleClean = m.title.replace(/^[\u{1F550}\u{1F551}\u{1F552}\u{1F553}\u{1F554}\u{1F555}\u{1F556}\u{1F557}\u{1F558}\u{1F559}\u{1F55A}\u{1F55B}].+?\|\s*/u, '');
-    const vsParts = titleClean.split(' vs ');
-    const leaguePart = titleClean.includes(':') ? titleClean.split(':')[0] : m.channel;
-    const teamsPart = titleClean.includes(':') ? titleClean.split(':').slice(1).join(':').trim() : titleClean;
-    const home = teamsPart.split(' vs ')[0]?.trim() || 'Home';
-    const away = teamsPart.split(' vs ')[1]?.trim() || 'Away';
-    const matchTime = m.matchTime || '';
-    const isLive = m.isLive;
-
+    const home = m.homeName || m.title.split(' vs ')[0] || 'Home';
+    const away = m.awayName || m.title.split(' vs ')[1] || 'Away';
     const homeInitial = home.substring(0, 3).toUpperCase();
     const awayInitial = away.substring(0, 3).toUpperCase();
+    const isLive = m.isLive;
+    const hasScore = m.homeScore !== '' && m.awayScore !== '' && m.homeScore !== undefined;
+    const league = m.channel || '';
+    const matchTime = m.matchTime || '';
+    const homeLogo = m.thumbnail && m.thumbnail.includes('espn') ? m.thumbnail : '';
+    const awayLogo = m.awayLogo || '';
 
     return `
-    <div onclick="openStream('${(m.streamUrl || m.pageUrl).replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${m.title.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"
-         style="background:#1a1a2e;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #2a2a4a;transition:all 0.2s;position:relative;"
+    <div onclick="openStream('${(m.streamUrl||m.pageUrl).replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${(home+' vs '+away).replace(/'/g,"\\'")}')"
+         style="background:#1a1a2e;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #2a2a4a;transition:all 0.2s;"
          onmouseover="this.style.borderColor='#e63946';this.style.background='#1e1e3a'"
          onmouseout="this.style.borderColor='#2a2a4a';this.style.background='#1a1a2e'">
-
-        <!-- League bar -->
         <div style="background:#12122a;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a2a4a;">
-            <span style="color:#aaa;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;">${leaguePart}</span>
+            <span style="color:#aaa;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;">${league}</span>
             ${isLive
                 ? '<span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:bold;animation:pulse 1.5s infinite;">&#9679; LIVE</span>'
                 : `<span style="color:#f39c12;font-size:11px;">&#128336; ${matchTime}</span>`
             }
         </div>
-
-        <!-- Teams -->
         <div style="padding:16px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <!-- Home team -->
             <div style="flex:1;text-align:center;">
-                <div style="width:48px;height:48px;background:#2a2a4a;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-weight:bold;color:#fff;font-size:13px;">${homeInitial}</div>
+                ${homeLogo
+                    ? `<img src="${homeLogo}" style="width:44px;height:44px;object-fit:contain;margin:0 auto 8px;display:block;" onerror="this.style.display='none'">`
+                    : `<div style="width:44px;height:44px;background:#2a2a4a;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-weight:bold;color:#fff;font-size:12px;">${homeInitial}</div>`
+                }
                 <div style="color:#fff;font-size:12px;font-weight:600;line-height:1.3;">${home}</div>
             </div>
-
-            <!-- VS -->
-            <div style="text-align:center;flex-shrink:0;">
-                ${isLive
-                    ? '<div style="color:#e63946;font-weight:bold;font-size:18px;">LIVE</div>'
-                    : '<div style="color:#aaa;font-weight:bold;font-size:16px;">VS</div>'
+            <div style="text-align:center;flex-shrink:0;min-width:50px;">
+                ${hasScore && isLive
+                    ? `<div style="color:#fff;font-weight:bold;font-size:22px;">${m.homeScore} - ${m.awayScore}</div><div style="color:#e63946;font-size:10px;margin-top:2px;">LIVE</div>`
+                    : isLive
+                        ? '<div style="color:#e63946;font-weight:bold;font-size:14px;">LIVE</div>'
+                        : '<div style="color:#aaa;font-weight:bold;font-size:16px;">VS</div>'
                 }
             </div>
-
-            <!-- Away team -->
             <div style="flex:1;text-align:center;">
-                <div style="width:48px;height:48px;background:#2a2a4a;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-weight:bold;color:#fff;font-size:13px;">${awayInitial}</div>
+                ${awayLogo
+                    ? `<img src="${awayLogo}" style="width:44px;height:44px;object-fit:contain;margin:0 auto 8px;display:block;" onerror="this.style.display='none'">`
+                    : `<div style="width:44px;height:44px;background:#2a2a4a;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-weight:bold;color:#fff;font-size:12px;">${awayInitial}</div>`
+                }
                 <div style="color:#fff;font-size:12px;font-weight:600;line-height:1.3;">${away}</div>
             </div>
         </div>
-
-        <!-- Watch button -->
         <div style="padding:0 14px 14px;">
-            <button style="width:100%;background:${isLive ? '#e63946' : '#2a2a4a'};color:#fff;border:none;padding:9px;border-radius:6px;font-weight:bold;font-size:13px;cursor:pointer;transition:background 0.2s;"
+            <button style="width:100%;background:${isLive ? '#e63946' : '#2a2a4a'};color:#fff;border:none;padding:9px;border-radius:6px;font-weight:bold;font-size:13px;cursor:pointer;"
                 onmouseover="this.style.background='${isLive ? '#c0392b' : '#3a3a6a'}'"
                 onmouseout="this.style.background='${isLive ? '#e63946' : '#2a2a4a'}'"
-            >${isLive ? '&#128308; Watch Live' : '&#128336; Set Reminder'}</button>
+            >${isLive ? '&#128308; Watch Live' : '&#128336; Watch on CricFy'}</button>
         </div>
     </div>`;
 }
