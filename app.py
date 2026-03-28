@@ -573,6 +573,20 @@ def live_football():
     return jsonify(streams)
 
 
+@app.route('/debug-cricfy')
+def debug_cricfy():
+    import requests
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'}
+    results = {}
+    for url in ['https://cricfy.tv/', 'https://cricfy.tv/football/', 'https://cricfy.tv/live/', 'https://cricfy.tv/upcoming/']:
+        try:
+            r = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
+            results[url] = {'status': r.status_code, 'final_url': r.url, 'html': r.text[:4000]}
+        except Exception as e:
+            results[url] = {'error': str(e)}
+    return jsonify(results)
+
+
 @app.route('/wrestling')
 def wrestling():
     videos = fetch_videos('wwe wrestling highlights', 30)
