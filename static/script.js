@@ -1006,8 +1006,6 @@ function playTV(stream, name) {
     const frame = document.getElementById('tvPlayerFrame');
     frame.style.display = 'none';
 
-    const proxied = '/stream-proxy?url=' + encodeURIComponent(stream);
-
     const video = document.createElement('video');
     video.id = 'tvHLSPlayer';
     video.controls = true;
@@ -1015,28 +1013,34 @@ function playTV(stream, name) {
     video.style.cssText = 'width:100%;height:calc(100% - 46px);background:#000;display:block;';
     div.appendChild(video);
 
-    const tryPlay = () => {
-        if (Hls.isSupported()) {
-            window.hlsInstance = new Hls({ enableWorker: false, lowLatencyMode: true });
-            window.hlsInstance.loadSource(proxied);
+    const tryPlay = (src) => {
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = src;
+            video.play().catch(console.error);
+        } else if (Hls.isSupported()) {
+            window.hlsInstance = new Hls({ enableWorker: false, lowLatencyMode: true, xhrSetup: (xhr) => { xhr.withCredentials = false; } });
+            window.hlsInstance.loadSource(src);
             window.hlsInstance.attachMedia(video);
             window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(console.error));
             window.hlsInstance.on(Hls.Events.ERROR, (e, data) => {
-                console.error('HLS error:', data);
+                if (data.fatal && src === stream) {
+                    // Try proxied version as fallback
+                    window.hlsInstance.destroy();
+                    tryPlay('/stream-proxy?url=' + encodeURIComponent(stream));
+                }
             });
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = proxied;
-            video.play().catch(console.error);
         }
     };
+
+    const load = () => tryPlay(stream);
 
     if (!window.Hls) {
         const s = document.createElement('script');
         s.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
-        s.onload = tryPlay;
+        s.onload = load;
         document.head.appendChild(s);
     } else {
-        tryPlay();
+        load();
     }
 }
 

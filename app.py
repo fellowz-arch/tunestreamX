@@ -630,81 +630,16 @@ def test_streams():
 
 @app.route('/live-tv')
 def live_tv():
-    import requests
-    channels = []
-    try:
-        # Fetch verified streams from iptv-org project
-        r = requests.get(
-            'https://iptv-org.github.io/api/streams.json',
-            timeout=10,
-            headers={'User-Agent': 'Mozilla/5.0'}
-        )
-        streams_data = r.json()
-        
-        # Channel IDs from iptv-org we want
-        wanted_ids = {
-            'AlJazeeraEnglish.qa': {'name': 'Al Jazeera English', 'category': 'news', 'logo': 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_eng.svg/200px-Aljazeera_eng.svg.png'},
-            'DWEnglish.de': {'name': 'DW English', 'category': 'news', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png'},
-            'France24English.fr': {'name': 'France 24 English', 'category': 'news', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/France_24_logo.svg/200px-France_24_logo.svg.png'},
-            'TRTWorld.tr': {'name': 'TRT World', 'category': 'news', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/TRT_World_logo.svg/200px-TRT_World_logo.svg.png'},
-            'CGTNEnglish.cn': {'name': 'CGTN', 'category': 'news', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png'},
-            'NHKWorldJapan.jp': {'name': 'NHK World', 'category': 'news', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/NHK_World_logo.svg/200px-NHK_World_logo.svg.png'},
-            'Euronews.gb': {'name': 'Euronews', 'category': 'news', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Euronews_logo_2022.svg/200px-Euronews_logo_2022.svg.png'},
-            'SkyNews.gb': {'name': 'Sky News', 'category': 'news', 'logo': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/84/Sky_News_logo_2016.svg/200px-Sky_News_logo_2016.svg.png'},
-            'BloombergTelevision.us': {'name': 'Bloomberg TV', 'category': 'news', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Bloomberg_Television_logo.svg/200px-Bloomberg_Television_logo.svg.png'},
-            'Africanews.cd': {'name': 'Africanews', 'category': 'news', 'logo': 'https://placehold.co/80x50/e63946/ffffff?text=Africanews'},
-            'NTVKenya.ke': {'name': 'NTV Kenya', 'category': 'africa', 'logo': 'https://placehold.co/80x50/1a1a2e/ffffff?text=NTV'},
-            'CitizenTV.ke': {'name': 'Citizen TV', 'category': 'africa', 'logo': 'https://placehold.co/80x50/e63946/ffffff?text=Citizen'},
-            'KTNHome.ke': {'name': 'KTN Kenya', 'category': 'africa', 'logo': 'https://placehold.co/80x50/1a5276/ffffff?text=KTN'},
-            'ChannelsTV.ng': {'name': 'Channels TV', 'category': 'africa', 'logo': 'https://placehold.co/80x50/1a1a2e/ffffff?text=Channels'},
-            'SABCNews.za': {'name': 'SABC News', 'category': 'africa', 'logo': 'https://placehold.co/80x50/003366/ffffff?text=SABC'},
-            'Eurosport1.gb': {'name': 'Eurosport 1', 'category': 'sports', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Eurosport_logo_2015.svg/200px-Eurosport_logo_2015.svg.png'},
-            'MTV.us': {'name': 'MTV', 'category': 'music', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/MTV_2021_logo.svg/200px-MTV_2021_logo.svg.png'},
-            'CartoonNetwork.us': {'name': 'Cartoon Network', 'category': 'kids', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/200px-Cartoon_Network_2010_logo.svg.png'},
-        }
-        
-        found_ids = set()
-        for s in streams_data:
-            ch_id = s.get('channel', '')
-            if ch_id in wanted_ids and ch_id not in found_ids:
-                info = wanted_ids[ch_id]
-                channels.append({
-                    'id': ch_id,
-                    'name': info['name'],
-                    'logo': info['logo'],
-                    'category': info['category'],
-                    'stream': s.get('url', '')
-                })
-                found_ids.add(ch_id)
-    except Exception as e:
-        print(f'IPTV org streams error: {e}')
-    
-    # Always add these as fallback - they are known working
-    fallback = [
-        {'id':'aje_fb','name':'Al Jazeera English','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_eng.svg/200px-Aljazeera_eng.svg.png','category':'news','stream':'https://live-hls-web-aje.getaj.net/AJE/index.m3u8'},
-        {'id':'dw_fb','name':'DW News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8'},
-        {'id':'f24_fb','name':'France 24 EN','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/France_24_logo.svg/200px-France_24_logo.svg.png','category':'news','stream':'https://stream.france24.com/hls/live/2037163/F24_EN_HI_HLS/master.m3u8'},
-        {'id':'trt_fb','name':'TRT World','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/TRT_World_logo.svg/200px-TRT_World_logo.svg.png','category':'news','stream':'https://tv-trtworld.live.trt.com.tr/master.m3u8'},
-        {'id':'cgtn_fb','name':'CGTN','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/english/cgtn-news.m3u8'},
-        {'id':'nhk_fb','name':'NHK World','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/NHK_World_logo.svg/200px-NHK_World_logo.svg.png','category':'news','stream':'https://nhkwlive-ojp.akamaized.net/hls/live/2003459/nhkwlive-ojp-en/index.m3u8'},
-        {'id':'euronews_fb','name':'Euronews','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Euronews_logo_2022.svg/200px-Euronews_logo_2022.svg.png','category':'news','stream':'https://euronews-euronews-en-live.samsung.wurl.tv/manifest/playlist.m3u8'},
-        {'id':'skynews_fb','name':'Sky News','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/8/84/Sky_News_logo_2016.svg/200px-Sky_News_logo_2016.svg.png','category':'news','stream':'https://skynews-skynews-live.samsung.wurl.tv/manifest/playlist.m3u8'},
-        {'id':'bloomberg_fb','name':'Bloomberg TV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Bloomberg_Television_logo.svg/200px-Bloomberg_Television_logo.svg.png','category':'news','stream':'https://bloomberg-bloomberg-live.samsung.wurl.tv/manifest/playlist.m3u8'},
-        {'id':'realmadrid_fb','name':'Real Madrid TV','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/200px-Real_Madrid_CF.svg.png','category':'sports','stream':'https://rmtv-live.akamaized.net/hls/live/2093126/rmtv/index.m3u8'},
-        {'id':'natgeo_fb','name':'Nat Geo Wild','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/National_Geographic_Channel_logo.svg/200px-National_Geographic_Channel_logo.svg.png','category':'entertainment','stream':'https://natgeowild-natgeowild-live.samsung.wurl.tv/manifest/playlist.m3u8'},
-        {'id':'history_fb','name':'History Channel','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/History_Channel_logo.svg/200px-History_Channel_logo.svg.png','category':'entertainment','stream':'https://history-history-live.samsung.wurl.tv/manifest/playlist.m3u8'},
-        {'id':'mtv_fb','name':'MTV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/MTV_2021_logo.svg/200px-MTV_2021_logo.svg.png','category':'music','stream':'https://mtv-mtv-live.samsung.wurl.tv/manifest/playlist.m3u8'},
-        {'id':'trace_fb','name':'Trace Urban','logo':'https://placehold.co/80x50/1a1a2e/ffffff?text=Trace','category':'music','stream':'https://traceurban-traceurban-live.samsung.wurl.tv/manifest/playlist.m3u8'},
-        {'id':'cartoon_fb','name':'Cartoon Network','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/200px-Cartoon_Network_2010_logo.svg.png','category':'kids','stream':'https://cartoonnetwork-cartoonnetwork-live.samsung.wurl.tv/manifest/playlist.m3u8'},
-        {'id':'ntv_fb','name':'NTV Kenya','logo':'https://placehold.co/80x50/1a1a2e/ffffff?text=NTV','category':'africa','stream':'https://ntv-live.akamaized.net/hls/live/ntv/index.m3u8'},
-        {'id':'citizen_fb','name':'Citizen TV','logo':'https://placehold.co/80x50/e63946/ffffff?text=Citizen','category':'africa','stream':'https://citizentv-live.akamaized.net/hls/live/citizen/index.m3u8'},
+    # Only streams confirmed working from this server
+    channels = [
+        {'id':'cgtn','name':'CGTN News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/english/cgtn-news.m3u8'},
+        {'id':'dw','name':'DW News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8'},
+        {'id':'dw2','name':'DW Deutsch','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8'},
+        {'id':'cgtn2','name':'CGTN French','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/french/cgtn-news.m3u8'},
+        {'id':'cgtn3','name':'CGTN Arabic','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/arabic/cgtn-news.m3u8'},
+        {'id':'cgtn4','name':'CGTN Spanish','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/spanish/cgtn-news.m3u8'},
+        {'id':'cgtn5','name':'CGTN Russian','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/russian/cgtn-news.m3u8'},
     ]
-    
-    existing = {c['id'] for c in channels}
-    for ch in fallback:
-        if ch['id'] not in existing:
-            channels.append(ch)
-    
     return jsonify(channels)
 
 
