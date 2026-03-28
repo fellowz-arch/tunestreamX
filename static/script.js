@@ -997,43 +997,46 @@ function searchTV(query) {
 function playTV(stream, name) {
     document.getElementById('tvPlayerTitle').textContent = '\ud83d\udcfa ' + name;
     const div = document.getElementById('tvPlayerDiv');
-    const frame = document.getElementById('tvPlayerFrame');
     div.style.display = 'block';
 
-    if (stream.includes('.m3u8')) {
-        // Use HLS.js for m3u8 streams
-        frame.style.display = 'none';
-        let video = document.getElementById('tvHLSPlayer');
-        if (!video) {
-            video = document.createElement('video');
-            video.id = 'tvHLSPlayer';
-            video.controls = true;
-            video.autoplay = true;
-            video.style.cssText = 'width:100%;height:calc(100% - 46px);background:#000;display:block;';
-            div.appendChild(video);
-        }
-        video.style.display = 'block';
+    const oldVideo = document.getElementById('tvHLSPlayer');
+    if (oldVideo) oldVideo.remove();
+    if (window.hlsInstance) { window.hlsInstance.destroy(); window.hlsInstance = null; }
 
-        if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = stream;
-            video.play();
-        } else {
-            // Load HLS.js dynamically
-            if (!window.Hls) {
-                const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
-                script.onload = () => startHLS(video, stream);
-                document.head.appendChild(script);
-            } else {
-                startHLS(video, stream);
-            }
+    const frame = document.getElementById('tvPlayerFrame');
+    frame.style.display = 'none';
+
+    const proxied = '/stream-proxy?url=' + encodeURIComponent(stream);
+
+    const video = document.createElement('video');
+    video.id = 'tvHLSPlayer';
+    video.controls = true;
+    video.autoplay = true;
+    video.style.cssText = 'width:100%;height:calc(100% - 46px);background:#000;display:block;';
+    div.appendChild(video);
+
+    const tryPlay = () => {
+        if (Hls.isSupported()) {
+            window.hlsInstance = new Hls({ enableWorker: false, lowLatencyMode: true });
+            window.hlsInstance.loadSource(proxied);
+            window.hlsInstance.attachMedia(video);
+            window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(console.error));
+            window.hlsInstance.on(Hls.Events.ERROR, (e, data) => {
+                console.error('HLS error:', data);
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = proxied;
+            video.play().catch(console.error);
         }
+    };
+
+    if (!window.Hls) {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+        s.onload = tryPlay;
+        document.head.appendChild(s);
     } else {
-        // iframe for non-m3u8
-        const video = document.getElementById('tvHLSPlayer');
-        if (video) video.style.display = 'none';
-        frame.style.display = 'block';
-        frame.src = stream;
+        tryPlay();
     }
 }
 
