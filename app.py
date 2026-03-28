@@ -443,15 +443,65 @@ def live_football():
     except Exception as e:
         print(f'LiveSoccerTV error: {e}')
 
+    # StreamSports / SportsHub as reliable backup for live football
+    for site_url, site_name, site_base in [
+        ('https://streamsports.me/', 'StreamSports', 'https://streamsports.me'),
+        ('https://sportshub.stream/football', 'SportsHub', 'https://sportshub.stream'),
+        ('https://soccerstreams-100.com/', 'SoccerStreams', 'https://soccerstreams-100.com'),
+    ]:
+        if len([s for s in streams if s['isLive']]) >= 20:
+            break
+        streams += scrape_source(site_url, site_name, site_base)
+
     # EpicSports
     streams += scrape_source('https://epicsports.stream/football/', 'EpicSports', 'https://epicsports.stream')
     if not [s for s in streams if s['channel'] == 'EpicSports']:
         streams += scrape_source('https://epicsports.stream/', 'EpicSports', 'https://epicsports.stream')
 
-    # CricFy TV
-    streams += scrape_source('https://cricfy.tv/football/', 'CricFy TV', 'https://cricfy.tv')
-    if not [s for s in streams if s['channel'] == 'CricFy TV']:
-        streams += scrape_source('https://cricfy.tv/', 'CricFy TV', 'https://cricfy.tv')
+    # CricFy TV - try multiple possible URLs
+    cricfy_found = False
+    for cricfy_url in ['https://cricfy.tv/', 'https://www.cricfy.tv/', 'https://cricfy.tv/live-football/', 'https://cricfy.tv/live-streaming/']:
+        try:
+            r = requests.get(cricfy_url, headers=headers, timeout=12)
+            if r.status_code == 200:
+                soup = BeautifulSoup(r.text, 'html.parser')
+                items = soup.select('article, .match, .event, .card, .post, .item, li, a[href]')[:30]
+                for item in items:
+                    title_el = item.select_one('h1,h2,h3,h4,.title,.entry-title') or (item if item.name == 'a' else None)
+                    link_el = item if item.name == 'a' else item.select_one('a[href]')
+                    img_el = item.select_one('img')
+                    if not link_el:
+                        continue
+                    title = title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True)
+                    title = title[:100]
+                    href = link_el.get('href', '')
+                    if not href or href == '#' or len(title) < 4:
+                        continue
+                    if not href.startswith('http'):
+                        href = 'https://cricfy.tv' + href
+                    # filter only football/soccer/live related
+                    keywords = ['football','soccer','live','match','vs','premier','league','champions','laliga','serie','bundesliga','fa cup']
+                    if not any(k in title.lower() or k in href.lower() for k in keywords):
+                        continue
+                    thumb = ''
+                    if img_el:
+                        thumb = img_el.get('src') or img_el.get('data-src') or img_el.get('data-lazy-src', '')
+                    if not thumb or len(thumb) < 10:
+                        thumb = 'https://via.placeholder.com/320x180/c0392b/ffffff?text=CricFy+TV'
+                    uid = abs(hash(href)) % 100000000
+                    if uid not in seen:
+                        seen.add(uid)
+                        streams.append({
+                            'id': f'cfy_{uid}', 'title': title, 'thumbnail': thumb,
+                            'channel': 'CricFy TV', 'isLive': True,
+                            'streamType': 'iframe', 'streamUrl': href, 'pageUrl': href
+                        })
+                        cricfy_found = True
+                if cricfy_found:
+                    break
+        except Exception as e:
+            print(f'CricFy TV {cricfy_url} error: {e}')
+            continue
 
     # HD Streamz
     streams += scrape_source('https://hdstreamz.net/', 'HD Streamz', 'https://hdstreamz.net')
