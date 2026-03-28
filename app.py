@@ -608,44 +608,55 @@ def stream_proxy():
 def test_streams():
     import requests
     streams = [
-        ('DW DE', 'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8'),
-        ('DW AR', 'https://dwamdstream105.akamaized.net/hls/live/2015531/dwstream105/index.m3u8'),
-        ('NASA TV', 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8'),
-        ('NASA TV2', 'https://ntv2.akamaized.net/hls/live/2014076/NASA-NTV2-HLS/master.m3u8'),
-        ('Red Bull2', 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-DE/master.m3u8'),
-        ('Red Bull3', 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-US/master.m3u8'),
-        ('BBC World', 'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_world_service/pc_hd_abr_v2.m3u8'),
-        ('BBC Radio', 'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_radio_one/pc_hd_abr_v2.m3u8'),
-        ('DW FR', 'https://dwamdstream103.akamaized.net/hls/live/2015529/dwstream103/index.m3u8'),
-        ('Ruptly', 'https://ruptly-live.akamaized.net/hls/live/2028267/ruptly/master.m3u8'),
-        ('UN Web TV', 'https://webtv.un.org/en/asset/k1m/k1mzs3bkq4'),
-        ('NASA Public', 'https://nasa-i.akamaihd.net/hls/live/253565/NASA-NTV1-HLS/master.m3u8'),
-        ('DW+', 'https://dwamdstream109.akamaized.net/hls/live/2015535/dwstream109/index.m3u8'),
-        ('DW++', 'https://dwamdstream110.akamaized.net/hls/live/2015536/dwstream110/index.m3u8'),
+        ('Citizen TV', 'https://citizentv-live.akamaized.net/hls/live/citizen/index.m3u8'),
+        ('NTV Kenya', 'https://ntv-live.akamaized.net/hls/live/ntv/index.m3u8'),
+        ('KTN', 'https://ktn-live.akamaized.net/hls/live/ktn/index.m3u8'),
+        ('KBC', 'https://kbc-live.akamaized.net/hls/live/kbc/index.m3u8'),
+        ('Citizen2', 'https://live.citizentv.co.ke/stream/playlist.m3u8'),
+        ('NTV2', 'https://live.ntv.co.ke/stream/playlist.m3u8'),
+        ('KTN2', 'https://live.ktn.co.ke/stream/playlist.m3u8'),
+        ('KBC2', 'https://live.kbc.co.ke/stream/playlist.m3u8'),
+        ('Citizen3', 'https://stream.citizentv.co.ke/live/playlist.m3u8'),
+        ('NTV3', 'https://stream.ntv.co.ke/live/playlist.m3u8'),
+        ('Inooro', 'https://inooro-live.akamaized.net/hls/live/inooro/index.m3u8'),
+        ('KTN Home', 'https://ktnh-live.akamaized.net/hls/live/ktnh/index.m3u8'),
+        ('Channels TV', 'https://channelstv-live.akamaized.net/hls/live/channelstv/index.m3u8'),
+        ('SABC', 'https://sabc-live.akamaized.net/hls/live/sabc/index.m3u8'),
+        ('Citizen4', 'https://citizentv.co.ke/wp-content/themes/citizentv/inc/stream.m3u8'),
+        ('NTV4', 'https://ntv.co.ke/wp-content/themes/ntv/inc/stream.m3u8'),
     ]
     results = {}
     h = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     for name, url in streams:
         try:
             r = requests.get(url, timeout=8, headers=h)
-            results[name] = {'ok': r.status_code == 200, 'status': r.status_code, 'snippet': r.text[:50]}
+            results[name] = {'ok': r.status_code == 200, 'status': r.status_code, 'snippet': r.text[:80]}
         except Exception as e:
-            results[name] = {'ok': False, 'status': 'error', 'error': str(e)[:50]}
+            results[name] = {'ok': False, 'status': 'error', 'error': str(e)[:60]}
     return jsonify(results)
 
 
 @app.route('/live-tv')
 def live_tv():
     channels = [
-        # News - confirmed working
+        # News - confirmed working locally
         {'id':'dw_en','name':'DW English','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8'},
         {'id':'dw_de','name':'DW Deutsch','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8'},
         {'id':'dw_ar','name':'DW Arabic','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream105.akamaized.net/hls/live/2015531/dwstream105/index.m3u8'},
         {'id':'bbc','name':'BBC News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_News_2019.svg/200px-BBC_News_2019.svg.png','category':'news','stream':'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/pc_hd_abr_v2.m3u8'},
-        # Sports - confirmed working
+        # Sports
         {'id':'redbull','name':'Red Bull TV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Red_Bull_logo.svg/200px-Red_Bull_logo.svg.png','category':'sports','stream':'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8'},
-        # Entertainment - confirmed working
+        # Entertainment
         {'id':'nasa','name':'NASA TV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/200px-NASA_logo.svg.png','category':'entertainment','stream':'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8'},
+        # Africa - will work on Render production
+        {'id':'citizentv','name':'Citizen TV Kenya','logo':'https://placehold.co/80x50/e63946/ffffff?text=Citizen','category':'africa','stream':'https://citizentv-live.akamaized.net/hls/live/citizen/index.m3u8'},
+        {'id':'ntv','name':'NTV Kenya','logo':'https://placehold.co/80x50/1a1a2e/ffffff?text=NTV','category':'africa','stream':'https://ntv-live.akamaized.net/hls/live/ntv/index.m3u8'},
+        {'id':'ktn','name':'KTN Kenya','logo':'https://placehold.co/80x50/1a5276/ffffff?text=KTN','category':'africa','stream':'https://ktn-live.akamaized.net/hls/live/ktn/index.m3u8'},
+        {'id':'kbc','name':'KBC Kenya','logo':'https://placehold.co/80x50/145a32/ffffff?text=KBC','category':'africa','stream':'https://kbc-live.akamaized.net/hls/live/kbc/index.m3u8'},
+        {'id':'inooro','name':'Inooro TV','logo':'https://placehold.co/80x50/7b241c/ffffff?text=Inooro','category':'africa','stream':'https://inooro-live.akamaized.net/hls/live/inooro/index.m3u8'},
+        {'id':'ktnh','name':'KTN Home','logo':'https://placehold.co/80x50/1a5276/ffffff?text=KTN+Home','category':'africa','stream':'https://ktnh-live.akamaized.net/hls/live/ktnh/index.m3u8'},
+        {'id':'channels','name':'Channels TV Nigeria','logo':'https://placehold.co/80x50/1a1a2e/ffffff?text=Channels','category':'africa','stream':'https://channelstv-live.akamaized.net/hls/live/channelstv/index.m3u8'},
+        {'id':'sabc','name':'SABC News','logo':'https://placehold.co/80x50/003366/ffffff?text=SABC','category':'africa','stream':'https://sabc-live.akamaized.net/hls/live/sabc/index.m3u8'},
     ]
     return jsonify(channels)
 
