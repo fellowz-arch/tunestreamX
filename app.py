@@ -3,33 +3,92 @@ import yt_dlp
 import os
 import time
 import random
+import json
+import sqlite3
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this-in-production'
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size for production
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
-# User database (in production, use a real database)
-registered_users = {}
+DB_FILE = 'tunestreamx.db'
+
+def get_db():
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+        email TEXT PRIMARY KEY,
+        password TEXT,
+        joined TEXT,
+        videos INTEGER DEFAULT 0,
+        views INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active'
+    )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS ads (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        video_data TEXT,
+        click_url TEXT,
+        uploaded TEXT,
+        views INTEGER DEFAULT 0
+    )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS analytics (
+        key TEXT PRIMARY KEY,
+        value TEXT
+    )''')
+    # Init analytics defaults
+    defaults = {
+        'downloads': '0', 'active_installs': '0', 'sessions': '0',
+        'daily_Mon': '0', 'daily_Tue': '0', 'daily_Wed': '0', 'daily_Thu': '0',
+        'daily_Fri': '0', 'daily_Sat': '0', 'daily_Sun': '0',
+        'views_Mon': '0', 'views_Tue': '0', 'views_Wed': '0', 'views_Thu': '0',
+        'views_Fri': '0', 'views_Sat': '0', 'views_Sun': '0',
+        'cat_music': '0', 'cat_movies': '0', 'cat_sports': '0', 'cat_gaming': '0', 'cat_other': '0'
+    }
+    for key, val in defaults.items():
+        c.execute('INSERT OR IGNORE INTO analytics (key, value) VALUES (?, ?)', (key, val))
+    conn.commit()
+    conn.close()
+    print('Database initialized')
+
+def get_analytics(key):
+    conn = get_db()
+    row = conn.execute('SELECT value FROM analytics WHERE key=?', (key,)).fetchone()
+    conn.close()
+    return int(row['value']) if row else 0
+
+def set_analytics(key, value):
+    conn = get_db()
+    conn.execute('INSERT OR REPLACE INTO analytics (key, value) VALUES (?, ?)', (key, str(value)))
+    conn.commit()
+    conn.close()
+
+def increment_analytics(key):
+    val = get_analytics(key) + 1
+    set_analytics(key, val)
+    return val
+
+init_db()
 
 # Security decorator for admin routes
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # In production, implement proper authentication
-        # For demo purposes, we'll use a simple session check
         if not session.get('is_admin'):
             return jsonify({'error': 'Admin access required'}), 403
         return f(*args, **kwargs)
     return decorated_function
 
-# Security decorator for creator routes
 def creator_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # In production, implement proper authentication
         if not session.get('is_creator') and not session.get('is_admin'):
             return jsonify({'error': 'Creator access required'}), 403
         return f(*args, **kwargs)
@@ -515,251 +574,181 @@ button{padding:12px 24px;background:#667eea;color:white;border:none;border-radiu
 
 import json
 
-# Data persistence
-DATA_FILE = 'app_data.json'
-
-def load_data():
-    try:
-        if os.path.exists(DATA_FILE):
-            with open(DATA_FILE, 'r') as f:
-                data = json.load(f)
-                print(f'Data loaded: {len(data.get("ads_storage", []))} ads, {len(data.get("registered_users", {}))} users')
-                return data
-    except Exception as e:
-        print(f'Error loading data: {e}')
-    return {
-        'analytics_data': {
-            'downloads': 0, 'active_installs': 0, 'sessions': 0, 'ad_views': 0, 'users': [], 'content': [], 'reports': [],
-            'daily_stats': {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0},
-            'views_data': {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0},
-            'revenue_sources': {'ads': 0, 'premium': 0, 'creator_fund': 0},
-            'categories': {'music': 0, 'movies': 0, 'sports': 0, 'gaming': 0, 'other': 0}
-        },
-        'registered_users': {}, 'ads_storage': [], 'ad_views': {}
-    }
-
-def save_data():
-    try:
-        data_to_save = {
-            'analytics_data': analytics_data, 
-            'registered_users': registered_users, 
-            'ads_storage': ads_storage, 
-            'ad_views': ad_views
-        }
-        with open(DATA_FILE, 'w') as f:
-            json.dump(data_to_save, f, indent=2)
-        print(f'Data saved successfully: {len(ads_storage)} ads, {len(registered_users)} users')
-    except Exception as e:
-        print(f'Error saving data: {e}')
-        import traceback
-        traceback.print_exc()
-
-app_data = load_data()
-analytics_data = app_data.get('analytics_data', {
-    'downloads': 0, 'active_installs': 0, 'sessions': 0, 'ad_views': 0, 'users': [], 'content': [], 'reports': [],
-    'daily_stats': {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0},
-    'views_data': {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0},
-    'revenue_sources': {'ads': 0, 'premium': 0, 'creator_fund': 0},
-    'categories': {'music': 0, 'movies': 0, 'sports': 0, 'gaming': 0, 'other': 0}
-})
-registered_users = app_data.get('registered_users', {})
-ads_storage = app_data.get('ads_storage', [])
-ad_views = app_data.get('ad_views', {})
-
 @app.route('/track/download', methods=['POST'])
 def track_download():
-    analytics_data['downloads'] += 1
-    save_data()
+    increment_analytics('downloads')
     return jsonify({'success': True})
 
 @app.route('/track/install', methods=['POST'])
 def track_install():
-    analytics_data['active_installs'] += 1
-    save_data()
+    increment_analytics('active_installs')
     return jsonify({'success': True})
 
 @app.route('/track/session', methods=['POST'])
 def track_session():
-    analytics_data['sessions'] += 1
     import datetime
+    increment_analytics('sessions')
     day = datetime.datetime.now().strftime('%a')
-    analytics_data['daily_stats'][day] += 1
-    save_data()
+    increment_analytics(f'daily_{day}')
     return jsonify({'success': True})
 
 @app.route('/track/view', methods=['POST'])
 def track_view():
+    import datetime
     data = request.json
     category = data.get('category', 'other').lower()
-    if category in analytics_data['categories']:
-        analytics_data['categories'][category] += 1
-    import datetime
+    cat_map = {'music': 'cat_music', 'movies': 'cat_movies', 'sports': 'cat_sports', 'gaming': 'cat_gaming', 'other': 'cat_other'}
+    if category in cat_map:
+        increment_analytics(cat_map[category])
     day = datetime.datetime.now().strftime('%a')
-    analytics_data['views_data'][day] += 1
-    save_data()
+    increment_analytics(f'views_{day}')
     return jsonify({'success': True})
 
 @app.route('/admin/stats')
 def admin_stats():
-    total_views = sum(analytics_data['views_data'].values())
-    total_categories = sum(analytics_data['categories'].values())
-    total_ad_views = sum(ad_views.values())
+    conn = get_db()
+    total_users = conn.execute('SELECT COUNT(*) as c FROM users').fetchone()['c']
+    total_ad_views = conn.execute('SELECT SUM(views) as s FROM ads').fetchone()['s'] or 0
+    conn.close()
+    days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+    total_views = sum(get_analytics(f'views_{d}') for d in days)
     return jsonify({
-        'totalDownloads': analytics_data['downloads'],
-        'activeInstalls': analytics_data['active_installs'],
-        'totalUsers': len(analytics_data['users']),
-        'activeSessions': analytics_data['sessions'],
-        'totalVideos': total_categories,
+        'totalDownloads': get_analytics('downloads'),
+        'activeInstalls': get_analytics('active_installs'),
+        'totalUsers': total_users,
+        'activeSessions': get_analytics('sessions'),
+        'totalVideos': total_views,
         'totalViews': total_views,
         'adViews': total_ad_views,
         'totalRevenue': total_ad_views * 0.05,
-        'reportedContent': len(analytics_data['reports']),
+        'reportedContent': 0,
         'bannedUsers': 0
     })
 
 @app.route('/admin/chart-data')
 def admin_chart_data():
+    days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+    conn = get_db()
+    total_ad_views = conn.execute('SELECT SUM(views) as s FROM ads').fetchone()['s'] or 0
+    conn.close()
     return jsonify({
-        'userGrowth': list(analytics_data['daily_stats'].values()),
-        'viewsData': list(analytics_data['views_data'].values()),
-        'revenueBreakdown': [analytics_data['ad_views'], 0, 0],  # ads, premium, creator fund
-        'categories': list(analytics_data['categories'].values())
+        'userGrowth': [get_analytics(f'daily_{d}') for d in days],
+        'viewsData': [get_analytics(f'views_{d}') for d in days],
+        'revenueBreakdown': [total_ad_views, 0, 0],
+        'categories': [get_analytics('cat_music'), get_analytics('cat_movies'), get_analytics('cat_sports'), get_analytics('cat_gaming'), get_analytics('cat_other')]
     })
 
 @app.route('/admin/users')
 def admin_users():
-    users_list = []
-    for i, (email, user_data) in enumerate(registered_users.items()):
-        users_list.append({
-            'id': str(i + 1),
-            'email': email,
-            'joined': user_data['joined'],
-            'status': 'active',
-            'videos': user_data.get('videos', 0),
-            'views': user_data.get('views', 0)
-        })
-    return jsonify(users_list)
+    conn = get_db()
+    users = conn.execute('SELECT * FROM users').fetchall()
+    conn.close()
+    return jsonify([{
+        'id': str(i+1), 'email': u['email'], 'joined': u['joined'],
+        'status': u['status'], 'videos': u['videos'], 'views': u['views']
+    } for i, u in enumerate(users)])
 
 @app.route('/admin/users/<user_id>', methods=['DELETE'])
 def delete_user_by_id(user_id):
-    return jsonify({'success': True, 'message': f'User {user_id} deleted'})
+    return jsonify({'success': True})
 
 @app.route('/admin/content')
 def admin_content():
-    return jsonify([
-        {'id': 'dQw4w9WgXcQ', 'title': 'Popular Song', 'category': 'Music', 'views': 1000000, 'status': 'approved', 'reports': 0},
-        {'id': 'kJQP7kiw5Fk', 'title': 'Trending Video', 'category': 'Entertainment', 'views': 500000, 'status': 'approved', 'reports': 2},
-        {'id': 'xyz123abc', 'title': 'Reported Content', 'category': 'Music', 'views': 10000, 'status': 'pending', 'reports': 15}
-    ])
+    return jsonify([])
 
 @app.route('/admin/content/<content_id>/<action>', methods=['POST'])
 def moderate_content(content_id, action):
-    return jsonify({'success': True, 'message': f'Content {content_id} {action}d'})
+    return jsonify({'success': True})
 
 @app.route('/admin/reports')
 def admin_reports():
-    return jsonify([
-        {'id': '1', 'contentId': 'xyz123abc', 'reason': 'Copyright violation', 'reporter': 'user@example.com', 'date': '2024-01-20', 'status': 'pending'},
-        {'id': '2', 'contentId': 'abc456def', 'reason': 'Inappropriate content', 'reporter': 'another@example.com', 'date': '2024-01-19', 'status': 'resolved'}
-    ])
+    return jsonify([])
 
 @app.route('/admin/reports/<report_id>/resolve', methods=['POST'])
 def resolve_report(report_id):
-    return jsonify({'success': True, 'message': f'Report {report_id} resolved'})
+    return jsonify({'success': True})
 
 @app.route('/admin/reports/<report_id>/dismiss', methods=['POST'])
 def dismiss_report(report_id):
-    return jsonify({'success': True, 'message': f'Report {report_id} dismissed'})
+    return jsonify({'success': True})
 
 @app.route('/admin/ads/<ad_id>', methods=['DELETE'])
 def delete_ad_by_id(ad_id):
-    global ads_storage
-    ads_storage = [ad for ad in ads_storage if ad['id'] != ad_id]
-    save_data()
-    return jsonify({'success': True, 'message': f'Ad {ad_id} deleted'})
+    conn = get_db()
+    conn.execute('DELETE FROM ads WHERE id=?', (ad_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
 
 @app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
     data = request.json
     email = data.get('email')
-    return jsonify({'success': True, 'message': f'User {email} deleted'})
+    conn = get_db()
+    conn.execute('DELETE FROM users WHERE email=?', (email,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
 
 @app.route('/admin/ban-user', methods=['POST'])
 def ban_user():
     data = request.json
     email = data.get('email')
-    return jsonify({'success': True, 'message': f'User {email} banned'})
+    conn = get_db()
+    conn.execute("UPDATE users SET status='banned' WHERE email=?", (email,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
 
 @app.route('/admin/delete-content', methods=['POST'])
 def delete_content():
-    data = request.json
-    content_id = data.get('contentId')
-    return jsonify({'success': True, 'message': f'Content {content_id} deleted'})
-
-# Ads storage (in production, use a database)
-ads_storage = []
-ad_views = {}
+    return jsonify({'success': True})
 
 @app.route('/admin/ads')
 def admin_ads():
+    conn = get_db()
+    ads = conn.execute('SELECT * FROM ads').fetchall()
+    conn.close()
     return jsonify([{
-        'id': ad['id'],
-        'title': ad['title'],
-        'videoFile': ad.get('videoFile') or ad.get('videoData'),
-        'clickUrl': ad.get('clickUrl'),
-        'views': ad_views.get(ad['id'], 0),
+        'id': ad['id'], 'title': ad['title'],
+        'videoFile': ad['video_data'],
+        'clickUrl': ad['click_url'],
+        'views': ad['views'],
         'uploaded': ad['uploaded']
-    } for ad in ads_storage])
+    } for ad in ads])
 
 @app.route('/admin/upload-ad', methods=['POST'])
 def upload_ad():
     try:
         if 'video' not in request.files:
             return jsonify({'success': False, 'error': 'No video file provided'}), 400
-            
         file = request.files['video']
         title = request.form.get('title')
         click_url = request.form.get('clickUrl', '')
-        
         if not file or file.filename == '':
             return jsonify({'success': False, 'error': 'No file selected'}), 400
-            
         if not title:
             return jsonify({'success': False, 'error': 'Title is required'}), 400
-        
-        # Validate file type
         allowed_extensions = {'.mp4', '.webm', '.mov', '.avi'}
         file_ext = Path(file.filename).suffix.lower()
         if file_ext not in allowed_extensions:
-            return jsonify({'success': False, 'error': 'Invalid file type. Use MP4, WebM, MOV, or AVI'}), 400
-        
-        # Check file size (max 50MB for base64 storage)
+            return jsonify({'success': False, 'error': 'Invalid file type'}), 400
         file.seek(0, 2)
         file_size = file.tell()
         file.seek(0)
         if file_size > 50 * 1024 * 1024:
             return jsonify({'success': False, 'error': 'File too large. Max 50MB'}), 400
-        
         ad_id = str(int(time.time()))
-        
-        # Store video as base64 for cloud deployment
         import base64
         video_data = base64.b64encode(file.read()).decode('utf-8')
         mime_type = 'video/mp4' if file_ext == '.mp4' else 'video/webm'
-        
-        ad = {
-            'id': ad_id,
-            'title': title,
-            'videoData': f'data:{mime_type};base64,{video_data}',
-            'clickUrl': click_url,
-            'uploaded': time.strftime('%Y-%m-%d')
-        }
-        ads_storage.append(ad)
-        ad_views[ad_id] = 0
-        save_data()
-        
-        return jsonify({'success': True, 'message': 'Ad uploaded successfully', 'ad': ad})
-        
+        video_data_url = f'data:{mime_type};base64,{video_data}'
+        conn = get_db()
+        conn.execute('INSERT INTO ads (id, title, video_data, click_url, uploaded, views) VALUES (?,?,?,?,?,0)',
+                     (ad_id, title, video_data_url, click_url, time.strftime('%Y-%m-%d')))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Ad uploaded successfully', 'ad': {'id': ad_id, 'title': title}})
     except Exception as e:
         print(f'Upload error: {e}')
         return jsonify({'success': False, 'error': f'Upload failed: {str(e)}'}), 500
@@ -768,29 +757,30 @@ def upload_ad():
 def delete_ad():
     data = request.json
     ad_id = data.get('adId')
-    global ads_storage
-    ads_storage = [ad for ad in ads_storage if ad['id'] != ad_id]
-    save_data()
+    conn = get_db()
+    conn.execute('DELETE FROM ads WHERE id=?', (ad_id,))
+    conn.commit()
+    conn.close()
     return jsonify({'success': True})
 
 @app.route('/get-ad')
 def get_ad():
-    if ads_storage:
-        ad = random.choice(ads_storage)
-        ad_copy = ad.copy()
-        ad_copy['videoFile'] = ad.get('videoFile') or ad.get('videoData')
-        return jsonify(ad_copy)
+    conn = get_db()
+    ads = conn.execute('SELECT * FROM ads').fetchall()
+    conn.close()
+    if ads:
+        ad = random.choice(ads)
+        return jsonify({'id': ad['id'], 'title': ad['title'], 'videoFile': ad['video_data'], 'clickUrl': ad['click_url']})
     return jsonify(None)
 
 @app.route('/track-ad-view', methods=['POST'])
 def track_ad_view():
     data = request.json
     ad_id = data.get('adId')
-    if ad_id in ad_views:
-        ad_views[ad_id] += 1
-    else:
-        ad_views[ad_id] = 1
-    save_data()
+    conn = get_db()
+    conn.execute('UPDATE ads SET views = views + 1 WHERE id=?', (ad_id,))
+    conn.commit()
+    conn.close()
     return jsonify({'success': True})
 
 # Creator Dashboard (Like YouTube Studio)
@@ -841,39 +831,27 @@ def login():
     data = request.json
     email = data.get('email')
     password = data.get('password')
-    
-    if email in registered_users and registered_users[email]['password'] == password:
+    conn = get_db()
+    user = conn.execute('SELECT * FROM users WHERE email=? AND password=?', (email, password)).fetchone()
+    conn.close()
+    if user:
         return jsonify({'success': True, 'message': 'Login successful'})
-    else:
-        return jsonify({'success': False, 'error': 'Invalid email or password'}), 401
+    return jsonify({'success': False, 'error': 'Invalid email or password'}), 401
 
 @app.route('/auth/signup', methods=['POST'])
 def signup():
     data = request.json
     email = data.get('email')
     password = data.get('password')
-    
-    if email in registered_users:
+    conn = get_db()
+    existing = conn.execute('SELECT email FROM users WHERE email=?', (email,)).fetchone()
+    if existing:
+        conn.close()
         return jsonify({'success': False, 'error': 'Account already exists. Please login.'}), 400
-    
-    registered_users[email] = {
-        'password': password,
-        'joined': time.strftime('%Y-%m-%d'),
-        'videos': 0,
-        'views': 0
-    }
-    
-    analytics_data['users'].append({
-        'id': str(len(analytics_data['users']) + 1),
-        'email': email,
-        'joined': time.strftime('%Y-%m-%d'),
-        'status': 'active',
-        'videos': 0,
-        'views': 0
-    })
-    
-    save_data()
-    
+    conn.execute('INSERT INTO users (email, password, joined, videos, views, status) VALUES (?,?,?,0,0,"active")',
+                 (email, password, time.strftime('%Y-%m-%d')))
+    conn.commit()
+    conn.close()
     return jsonify({'success': True, 'message': 'Account created successfully'})
 def send_welcome_email():
     import smtplib
