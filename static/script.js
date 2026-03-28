@@ -970,24 +970,29 @@ function renderLiveMatches(matches) {
     }
     const sourceColors = {
         'LiveSoccerTV': '#0a3d62', 'EpicSports': '#6c3483',
-        'CertifyTV': '#1a5276', 'HD Streamz': '#145a32',
-        'TV96': '#7b241c', 'SuperSport': '#003366'
+        'CricFy TV': '#c0392b', 'HD Streamz': '#145a32',
+        'TV96': '#7b241c', 'SuperSport': '#003366',
+        'StreamSports': '#1a5276', 'SportsHub': '#4a235a'
     };
     grid.innerHTML = matches.map(m => {
         const color = sourceColors[m.channel] || '#181818';
+        const badge = m.isLive
+            ? `<span style="background:#e63946;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">&#128308; LIVE</span>`
+            : `<span style="background:#f39c12;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">&#128336; UPCOMING</span>`;
+        const timeTag = m.matchTime ? `<div style="color:#f39c12;font-size:12px;margin-top:4px;">&#128336; ${m.matchTime}</div>` : '';
         return `
-        <div onclick="openStream('${m.streamUrl}','${m.title.replace(/'/g,"\\'")}')"
+        <div onclick="openStream('${m.streamUrl.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${m.title.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"
              style="background:#181818;border-radius:12px;overflow:hidden;cursor:pointer;border:1px solid #303030;transition:all 0.2s;"
              onmouseover="this.style.borderColor='#e63946';this.style.transform='translateY(-2px)'"
              onmouseout="this.style.borderColor='#303030';this.style.transform='translateY(0)'">
             <div style="position:relative;">
                 <img src="${m.thumbnail}" style="width:100%;height:160px;object-fit:cover;" onerror="this.src='https://placehold.co/320x160/1a1a2e/ffffff?text=Live+Match'">
-                <span style="position:absolute;top:8px;left:8px;background:#e63946;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">&#128308; LIVE</span>
+                <span style="position:absolute;top:8px;left:8px;">${badge}</span>
                 <span style="position:absolute;top:8px;right:8px;background:${color};color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;">${m.channel}</span>
             </div>
             <div style="padding:12px;">
                 <div style="color:#fff;font-weight:bold;font-size:14px;line-height:1.4;">${m.title}</div>
-                <div style="color:#aaa;font-size:12px;margin-top:4px;">${m.channel}</div>
+                ${timeTag}
             </div>
         </div>`;
     }).join('');

@@ -109,19 +109,6 @@ def creator_login():
 def test():
     return jsonify({'status': 'ok', 'message': 'API is working'})
 
-@app.route('/debug-cricfy')
-def debug_cricfy():
-    import requests
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'}
-    results = {}
-    for url in ['https://cricfy.tv/', 'https://cricfy.tv/football/', 'https://cricfy.tv/live/']:
-        try:
-            r = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
-            results[url] = {'status': r.status_code, 'final_url': r.url, 'html': r.text[:5000]}
-        except Exception as e:
-            results[url] = {'error': str(e)}
-    return jsonify(results)
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -448,50 +435,59 @@ def live_football():
     if not [s for s in streams if s['channel'] == 'EpicSports']:
         streams += scrape_source('https://epicsports.stream/', 'EpicSports', 'https://epicsports.stream')
 
-    # CricFy TV - try multiple possible URLs
-    cricfy_found = False
-    for cricfy_url in ['https://cricfy.tv/', 'https://www.cricfy.tv/', 'https://cricfy.tv/live-football/', 'https://cricfy.tv/live-streaming/']:
-        try:
-            r = requests.get(cricfy_url, headers=headers, timeout=12)
-            if r.status_code == 200:
-                soup = BeautifulSoup(r.text, 'html.parser')
-                items = soup.select('article, .match, .event, .card, .post, .item, li, a[href]')[:30]
-                for item in items:
-                    title_el = item.select_one('h1,h2,h3,h4,.title,.entry-title') or (item if item.name == 'a' else None)
-                    link_el = item if item.name == 'a' else item.select_one('a[href]')
-                    img_el = item.select_one('img')
-                    if not link_el:
-                        continue
-                    title = title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True)
-                    title = title[:100]
-                    href = link_el.get('href', '')
-                    if not href or href == '#' or len(title) < 4:
-                        continue
-                    if not href.startswith('http'):
-                        href = 'https://cricfy.tv' + href
-                    # filter only football/soccer/live related
-                    keywords = ['football','soccer','live','match','vs','premier','league','champions','laliga','serie','bundesliga','fa cup']
-                    if not any(k in title.lower() or k in href.lower() for k in keywords):
-                        continue
-                    thumb = ''
-                    if img_el:
-                        thumb = img_el.get('src') or img_el.get('data-src') or img_el.get('data-lazy-src', '')
-                    if not thumb or len(thumb) < 10:
-                        thumb = 'https://placehold.co/320x180/c0392b/ffffff?text=CricFy+TV'
-                    uid = abs(hash(href)) % 100000000
-                    if uid not in seen:
-                        seen.add(uid)
-                        streams.append({
-                            'id': f'cfy_{uid}', 'title': title, 'thumbnail': thumb,
-                            'channel': 'CricFy TV', 'isLive': True,
-                            'streamType': 'iframe', 'streamUrl': href, 'pageUrl': href
-                        })
-                        cricfy_found = True
-                if cricfy_found:
-                    break
-        except Exception as e:
-            print(f'CricFy TV {cricfy_url} error: {e}')
-            continue
+    # CricFy TV - scrape live and upcoming matches
+    try:
+        for cricfy_url in ['https://cricfy.tv/', 'https://cricfy.tv/football-streaming/']:
+            r = requests.get(cricfy_url, headers=headers, timeout=12, allow_redirects=True)
+            if r.status_code != 200:
+                continue
+            soup = BeautifulSoup(r.text, 'html.parser')
+            # Try all common match card selectors
+            for sel in ['.match-card', '.event-card', '.fixture', '.match', '.game', 'article', '.post', '.entry']:
+                items = soup.select(sel)[:30]
+                if items:
+                    for item in items:
+                        title_el = item.select_one('h1,h2,h3,h4,.title,.match-title,.entry-title,.team-names')
+                        link_el = item.select_one('a[href]')
+                        img_el = item.select_one('img')
+                        time_el = item.select_one('.time,.date,.match-time,.kickoff,.start-time')
+                        status_el = item.select_one('.live,.status,.badge,.label')
+                        if not link_el:
+                            continue
+                        title = title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True)
+                        title = title[:100]
+                        if len(title) < 4:
+                            continue
+                        href = link_el.get('href', '')
+                        if not href or href == '#':
+                            continue
+                        if not href.startswith('http'):
+                            href = 'https://cricfy.tv' + href
+                        match_time = time_el.get_text(strip=True) if time_el else ''
+                        status_text = status_el.get_text(strip=True).lower() if status_el else ''
+                        is_live = 'live' in status_text or 'live' in title.lower()
+                        is_upcoming = 'upcoming' in status_text or bool(match_time)
+                        if match_time:
+                            title = f'\U0001f550 {match_time} | {title}'
+                        thumb = ''
+                        if img_el:
+                            thumb = img_el.get('src') or img_el.get('data-src') or img_el.get('data-lazy-src', '')
+                        if not thumb or len(thumb) < 10:
+                            thumb = 'https://placehold.co/320x180/c0392b/ffffff?text=CricFy+TV'
+                        uid = abs(hash(href)) % 100000000
+                        if uid not in seen:
+                            seen.add(uid)
+                            streams.append({
+                                'id': f'cfy_{uid}', 'title': title, 'thumbnail': thumb,
+                                'channel': 'CricFy TV',
+                                'isLive': is_live,
+                                'isUpcoming': is_upcoming and not is_live,
+                                'matchTime': match_time,
+                                'streamType': 'iframe', 'streamUrl': href, 'pageUrl': href
+                            })
+                    break  # found items, stop trying selectors
+    except Exception as e:
+        print(f'CricFy TV error: {e}')
 
     # HD Streamz
     streams += scrape_source('https://hdstreamz.net/', 'HD Streamz', 'https://hdstreamz.net')
