@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TuneStreamX - Stream Music Online</title>
+    <title>TuneStreamX</title>
     <meta name="description" content="TuneStreamX - Stream your favorite music online. Discover trending songs, top hits, and personalized recommendations.">
     <meta name="keywords" content="music streaming, online music, songs, trending music, TuneStreamX">
     <link rel="icon" type="image/png" href="/static/TunestreamX logo.png">
@@ -179,29 +179,30 @@
     </div>
 
     <!-- Live Sports Full Page -->
-    <div id="liveSportsPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0f0f0f;z-index:3000;overflow-y:auto;">
-        <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:#181818;border-bottom:1px solid #303030;position:sticky;top:0;z-index:10;">
+    <div id="liveSportsPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0d0d1a;z-index:3000;overflow-y:auto;">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:#12122a;border-bottom:1px solid #2a2a4a;position:sticky;top:0;z-index:10;">
             <button onclick="closeLiveSports()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>
-            <span style="color:#e63946;font-weight:bold;font-size:18px;">&#128308; Live Sports</span>
-            <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
-                <button onclick="filterLive('all')" id="filter_all" style="background:#e63946;color:#fff;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-size:12px;">All</button>
-                <button onclick="filterLive('LiveSoccerTV')" id="filter_lstv" style="background:#303030;color:#fff;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-size:12px;">LiveSoccerTV</button>
-                <button onclick="filterLive('EpicSports')" id="filter_epic" style="background:#303030;color:#fff;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-size:12px;">EpicSports</button>
-                <button onclick="filterLive('CricFy TV')" id="filter_ctv" style="background:#303030;color:#fff;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-size:12px;">CricFy TV</button>
-                <button onclick="filterLive('StreamSports')" id="filter_ss2" style="background:#303030;color:#fff;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-size:12px;">StreamSports</button>
-                <button onclick="filterLive('HD Streamz')" id="filter_hds" style="background:#303030;color:#fff;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-size:12px;">HD Streamz</button>
-                <button onclick="filterLive('SuperSport')" id="filter_ss" style="background:#303030;color:#fff;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-size:12px;">SuperSport</button>
-            </div>
+            <img src="/static/TunestreamX logo.png" style="width:28px;height:28px;border-radius:6px;">
+            <span style="color:#fff;font-weight:bold;font-size:17px;">&#128308; Live Football</span>
+            <button onclick="loadLiveMatches()" style="margin-left:auto;background:#2a2a4a;border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;">&#8635; Refresh</button>
         </div>
-        <div id="liveMatchesGrid" style="padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
-            <div style="color:#aaa;text-align:center;grid-column:1/-1;padding:40px;">&#128308; Loading live matches...</div>
+        <div style="display:flex;gap:8px;padding:12px 16px;overflow-x:auto;background:#12122a;border-bottom:1px solid #2a2a4a;">
+            <button onclick="filterLive('all')" id="filter_all" style="background:#e63946;color:#fff;border:none;padding:7px 16px;border-radius:20px;cursor:pointer;font-size:12px;white-space:nowrap;font-weight:bold;">All Matches</button>
+            <button onclick="filterLive('live')" id="filter_live" style="background:#2a2a4a;color:#fff;border:none;padding:7px 16px;border-radius:20px;cursor:pointer;font-size:12px;white-space:nowrap;">&#128308; Live Now</button>
+            <button onclick="filterLive('upcoming')" id="filter_upcoming" style="background:#2a2a4a;color:#fff;border:none;padding:7px 16px;border-radius:20px;cursor:pointer;font-size:12px;white-space:nowrap;">&#128336; Upcoming</button>
+            <button onclick="filterLive('CricFy TV')" id="filter_ctv" style="background:#2a2a4a;color:#fff;border:none;padding:7px 16px;border-radius:20px;cursor:pointer;font-size:12px;white-space:nowrap;">CricFy TV</button>
+            <button onclick="filterLive('LiveSoccerTV')" id="filter_lstv" style="background:#2a2a4a;color:#fff;border:none;padding:7px 16px;border-radius:20px;cursor:pointer;font-size:12px;white-space:nowrap;">LiveSoccerTV</button>
+            <button onclick="filterLive('SuperSport')" id="filter_ss" style="background:#2a2a4a;color:#fff;border:none;padding:7px 16px;border-radius:20px;cursor:pointer;font-size:12px;white-space:nowrap;">SuperSport</button>
         </div>
-        <div id="liveStreamFrame" style="display:none;padding:0 20px 20px;">
+        <div id="liveMatchesGrid" style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">
+            <div style="color:#aaa;text-align:center;grid-column:1/-1;padding:60px 20px;"><div style="font-size:48px;">&#9917;</div><div style="margin-top:12px;">Loading matches...</div></div>
+        </div>
+        <div id="liveStreamFrame" style="display:none;padding:0 16px 16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <span id="liveStreamTitle" style="color:#fff;font-weight:bold;"></span>
-                <button onclick="closeLiveStreamFrame()" style="background:#303030;border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;">Close Stream</button>
+                <button onclick="closeLiveStreamFrame()" style="background:#2a2a4a;border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;">Close</button>
             </div>
-            <iframe id="liveStreamIframe" style="width:100%;height:70vh;border:none;border-radius:12px;background:#000;" allowfullscreen allow="autoplay"></iframe>
+            <iframe id="liveStreamIframe" style="width:100%;height:75vh;border:none;border-radius:10px;background:#000;" allowfullscreen allow="autoplay"></iframe>
         </div>
     </div>
 

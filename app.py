@@ -109,6 +109,30 @@ def creator_login():
 def test():
     return jsonify({'status': 'ok', 'message': 'API is working'})
 
+@app.route('/test-sports')
+def test_sports():
+    import requests, datetime
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    today = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+    results = {}
+    try:
+        r = requests.get(f'https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d={today}&s=Soccer', headers=headers, timeout=10)
+        results['thesportsdb'] = {'status': r.status_code, 'data': r.json()}
+    except Exception as e:
+        results['thesportsdb'] = {'error': str(e)}
+    try:
+        r2 = requests.get('https://www.livesoccertv.com/schedules/', headers=headers, timeout=10)
+        results['livesoccertv'] = {'status': r2.status_code, 'html_snippet': r2.text[:3000]}
+    except Exception as e:
+        results['livesoccertv'] = {'error': str(e)}
+    try:
+        r3 = requests.get('https://cricfy.tv/', headers=headers, timeout=10, allow_redirects=True)
+        results['cricfy'] = {'status': r3.status_code, 'final_url': r3.url, 'html_snippet': r3.text[:3000]}
+    except Exception as e:
+        results['cricfy'] = {'error': str(e)}
+    return jsonify(results)
+
+
 @app.route('/')
 def index():
     return render_template('index.html')

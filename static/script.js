@@ -965,45 +965,107 @@ async function loadLiveMatches() {
 function renderLiveMatches(matches) {
     const grid = document.getElementById('liveMatchesGrid');
     if (!matches || matches.length === 0) {
-        grid.innerHTML = '<div style="color:#aaa;text-align:center;grid-column:1/-1;padding:40px;">No matches found right now. Check back soon.</div>';
+        grid.innerHTML = '<div style="color:#aaa;text-align:center;grid-column:1/-1;padding:60px 20px;"><div style="font-size:48px;">⚽</div><div style="margin-top:12px;font-size:16px;">No matches right now. Check back soon.</div></div>';
         return;
     }
-    const sourceColors = {
-        'LiveSoccerTV': '#0a3d62', 'EpicSports': '#6c3483',
-        'CricFy TV': '#c0392b', 'HD Streamz': '#145a32',
-        'TV96': '#7b241c', 'SuperSport': '#003366',
-        'StreamSports': '#1a5276', 'SportsHub': '#4a235a'
-    };
-    grid.innerHTML = matches.map(m => {
-        const color = sourceColors[m.channel] || '#181818';
-        const badge = m.isLive
-            ? `<span style="background:#e63946;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">&#128308; LIVE</span>`
-            : `<span style="background:#f39c12;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">&#128336; UPCOMING</span>`;
-        const timeTag = m.matchTime ? `<div style="color:#f39c12;font-size:12px;margin-top:4px;">&#128336; ${m.matchTime}</div>` : '';
-        return `
-        <div onclick="openStream('${m.streamUrl.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${m.title.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"
-             style="background:#181818;border-radius:12px;overflow:hidden;cursor:pointer;border:1px solid #303030;transition:all 0.2s;"
-             onmouseover="this.style.borderColor='#e63946';this.style.transform='translateY(-2px)'"
-             onmouseout="this.style.borderColor='#303030';this.style.transform='translateY(0)'">
-            <div style="position:relative;">
-                <img src="${m.thumbnail}" style="width:100%;height:160px;object-fit:cover;" onerror="this.src='https://placehold.co/320x160/1a1a2e/ffffff?text=Live+Match'">
-                <span style="position:absolute;top:8px;left:8px;">${badge}</span>
-                <span style="position:absolute;top:8px;right:8px;background:${color};color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;">${m.channel}</span>
-            </div>
-            <div style="padding:12px;">
-                <div style="color:#fff;font-weight:bold;font-size:14px;line-height:1.4;">${m.title}</div>
-                ${timeTag}
-            </div>
+
+    // Separate live and upcoming
+    const live = matches.filter(m => m.isLive);
+    const upcoming = matches.filter(m => !m.isLive);
+
+    let html = '';
+
+    if (live.length > 0) {
+        html += `<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span style="background:#e63946;color:#fff;padding:4px 12px;border-radius:4px;font-weight:bold;font-size:13px;">&#128308; LIVE NOW</span>
+            <span style="color:#aaa;font-size:13px;">${live.length} match${live.length > 1 ? 'es' : ''} live</span>
         </div>`;
-    }).join('');
+        html += live.map(m => matchCard(m)).join('');
+    }
+
+    if (upcoming.length > 0) {
+        html += `<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:16px 0 4px;">
+            <span style="background:#f39c12;color:#fff;padding:4px 12px;border-radius:4px;font-weight:bold;font-size:13px;">&#128336; UPCOMING</span>
+            <span style="color:#aaa;font-size:13px;">${upcoming.length} match${upcoming.length > 1 ? 'es' : ''} today</span>
+        </div>`;
+        html += upcoming.map(m => matchCard(m)).join('');
+    }
+
+    grid.innerHTML = html;
+}
+
+function matchCard(m) {
+    // Parse "Team A vs Team B" from title
+    const titleClean = m.title.replace(/^[\u{1F550}\u{1F551}\u{1F552}\u{1F553}\u{1F554}\u{1F555}\u{1F556}\u{1F557}\u{1F558}\u{1F559}\u{1F55A}\u{1F55B}].+?\|\s*/u, '');
+    const vsParts = titleClean.split(' vs ');
+    const leaguePart = titleClean.includes(':') ? titleClean.split(':')[0] : m.channel;
+    const teamsPart = titleClean.includes(':') ? titleClean.split(':').slice(1).join(':').trim() : titleClean;
+    const home = teamsPart.split(' vs ')[0]?.trim() || 'Home';
+    const away = teamsPart.split(' vs ')[1]?.trim() || 'Away';
+    const matchTime = m.matchTime || '';
+    const isLive = m.isLive;
+
+    const homeInitial = home.substring(0, 3).toUpperCase();
+    const awayInitial = away.substring(0, 3).toUpperCase();
+
+    return `
+    <div onclick="openStream('${(m.streamUrl || m.pageUrl).replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${m.title.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"
+         style="background:#1a1a2e;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #2a2a4a;transition:all 0.2s;position:relative;"
+         onmouseover="this.style.borderColor='#e63946';this.style.background='#1e1e3a'"
+         onmouseout="this.style.borderColor='#2a2a4a';this.style.background='#1a1a2e'">
+
+        <!-- League bar -->
+        <div style="background:#12122a;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a2a4a;">
+            <span style="color:#aaa;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;">${leaguePart}</span>
+            ${isLive
+                ? '<span style="background:#e63946;color:#fff;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:bold;animation:pulse 1.5s infinite;">&#9679; LIVE</span>'
+                : `<span style="color:#f39c12;font-size:11px;">&#128336; ${matchTime}</span>`
+            }
+        </div>
+
+        <!-- Teams -->
+        <div style="padding:16px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <!-- Home team -->
+            <div style="flex:1;text-align:center;">
+                <div style="width:48px;height:48px;background:#2a2a4a;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-weight:bold;color:#fff;font-size:13px;">${homeInitial}</div>
+                <div style="color:#fff;font-size:12px;font-weight:600;line-height:1.3;">${home}</div>
+            </div>
+
+            <!-- VS -->
+            <div style="text-align:center;flex-shrink:0;">
+                ${isLive
+                    ? '<div style="color:#e63946;font-weight:bold;font-size:18px;">LIVE</div>'
+                    : '<div style="color:#aaa;font-weight:bold;font-size:16px;">VS</div>'
+                }
+            </div>
+
+            <!-- Away team -->
+            <div style="flex:1;text-align:center;">
+                <div style="width:48px;height:48px;background:#2a2a4a;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-weight:bold;color:#fff;font-size:13px;">${awayInitial}</div>
+                <div style="color:#fff;font-size:12px;font-weight:600;line-height:1.3;">${away}</div>
+            </div>
+        </div>
+
+        <!-- Watch button -->
+        <div style="padding:0 14px 14px;">
+            <button style="width:100%;background:${isLive ? '#e63946' : '#2a2a4a'};color:#fff;border:none;padding:9px;border-radius:6px;font-weight:bold;font-size:13px;cursor:pointer;transition:background 0.2s;"
+                onmouseover="this.style.background='${isLive ? '#c0392b' : '#3a3a6a'}'"
+                onmouseout="this.style.background='${isLive ? '#e63946' : '#2a2a4a'}'"
+            >${isLive ? '&#128308; Watch Live' : '&#128336; Set Reminder'}</button>
+        </div>
+    </div>`;
 }
 
 function filterLive(source) {
-    document.querySelectorAll('[id^="filter_"]').forEach(b => b.style.background = '#303030');
-    const btn = document.getElementById('filter_' + (source === 'all' ? 'all' : source.toLowerCase().replace(/ /g,'_')));
-    if (btn) btn.style.background = '#e63946';
+    document.querySelectorAll('[id^="filter_"]').forEach(b => b.style.background = '#2a2a4a');
+    const activeBtn = document.getElementById('filter_' + source.replace(/ /g,'_').toLowerCase());
+    if (activeBtn) activeBtn.style.background = '#e63946';
     if (source === 'all') {
         renderLiveMatches(allLiveMatches);
+    } else if (source === 'live') {
+        renderLiveMatches(allLiveMatches.filter(m => m.isLive));
+    } else if (source === 'upcoming') {
+        renderLiveMatches(allLiveMatches.filter(m => !m.isLive));
     } else {
         renderLiveMatches(allLiveMatches.filter(m => m.channel === source));
     }
