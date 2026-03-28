@@ -996,7 +996,13 @@ function searchTV(query) {
 
 function playTV(stream, name) {
     document.getElementById('tvPlayerTitle').textContent = '\ud83d\udcfa ' + name;
-    document.getElementById('tvPlayerFrame').src = stream;
+    const frame = document.getElementById('tvPlayerFrame');
+    // Add rel=0&modestbranding=1 for YouTube
+    if (stream.includes('youtube.com')) {
+        frame.src = stream + '&rel=0&modestbranding=1&mute=0';
+    } else {
+        frame.src = stream;
+    }
     document.getElementById('tvPlayerDiv').style.display = 'block';
 }
 
