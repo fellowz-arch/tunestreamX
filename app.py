@@ -608,37 +608,45 @@ def stream_proxy():
 def test_streams():
     import requests
     streams = [
-        ('Al Jazeera', 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8'),
-        ('DW', 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8'),
-        ('France 24', 'https://stream.france24.com/hls/live/2037163/F24_EN_HI_HLS/master.m3u8'),
-        ('TRT World', 'https://tv-trtworld.live.trt.com.tr/master.m3u8'),
-        ('CGTN', 'https://news.cgtn.com/resource/live/english/cgtn-news.m3u8'),
-        ('NHK', 'https://nhkwlive-ojp.akamaized.net/hls/live/2003459/nhkwlive-ojp-en/index.m3u8'),
-        ('Euronews', 'https://euronews-euronews-en-live.samsung.wurl.tv/manifest/playlist.m3u8'),
-        ('Sky News', 'https://skynews-skynews-live.samsung.wurl.tv/manifest/playlist.m3u8'),
-        ('Bloomberg', 'https://bloomberg-bloomberg-live.samsung.wurl.tv/manifest/playlist.m3u8'),
+        ('DW EN', 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8'),
+        ('DW DE', 'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8'),
+        ('DW AR', 'https://dwamdstream105.akamaized.net/hls/live/2015531/dwstream105/index.m3u8'),
+        ('DW ES', 'https://dwamdstream106.akamaized.net/hls/live/2015532/dwstream106/index.m3u8'),
+        ('Real Madrid', 'https://rmtv-live.akamaized.net/hls/live/2093126/rmtv/index.m3u8'),
+        ('NASA', 'https://nasa-i.akamaihd.net/hls/live/253565/NASA-NTV1-HLS/master.m3u8'),
+        ('Red Bull', 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8'),
+        ('AJE akamai', 'https://aljazeera-aljazeera-english-live.akamaized.net/hls/live/2027975/aljazeera-english/master.m3u8'),
+        ('BBC akamai', 'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/pc_hd_abr_v2.m3u8'),
+        ('Euronews akamai', 'https://euronews-euronews-en-live.akamaized.net/hls/live/2037190/euronews-en/master.m3u8'),
+        ('France24 akamai', 'https://f24hls-i.akamaihd.net/hls/live/221147/F24_EN_LO_HLS/master.m3u8'),
     ]
     results = {}
+    h = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     for name, url in streams:
         try:
-            r = requests.get(url, timeout=5, headers={'User-Agent': 'Mozilla/5.0'})
-            results[name] = {'status': r.status_code, 'ok': r.status_code == 200, 'content_type': r.headers.get('Content-Type','')}
+            r = requests.get(url, timeout=8, headers=h)
+            results[name] = {'status': r.status_code, 'ok': r.status_code == 200, 'snippet': r.text[:80]}
         except Exception as e:
-            results[name] = {'status': 'error', 'ok': False, 'error': str(e)}
+            results[name] = {'status': 'error', 'ok': False, 'error': str(e)[:60]}
     return jsonify(results)
 
 
 @app.route('/live-tv')
 def live_tv():
-    # Only streams confirmed working from this server
     channels = [
-        {'id':'cgtn','name':'CGTN News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/english/cgtn-news.m3u8'},
-        {'id':'dw','name':'DW News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8'},
-        {'id':'dw2','name':'DW Deutsch','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8'},
-        {'id':'cgtn2','name':'CGTN French','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/french/cgtn-news.m3u8'},
-        {'id':'cgtn3','name':'CGTN Arabic','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/arabic/cgtn-news.m3u8'},
-        {'id':'cgtn4','name':'CGTN Spanish','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/spanish/cgtn-news.m3u8'},
-        {'id':'cgtn5','name':'CGTN Russian','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/russian/cgtn-news.m3u8'},
+        # DW - confirmed working on akamaized.net
+        {'id':'dw_en','name':'DW English','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8'},
+        {'id':'dw_de','name':'DW Deutsch','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8'},
+        {'id':'dw_ar','name':'DW Arabic','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream105.akamaized.net/hls/live/2015531/dwstream105/index.m3u8'},
+        {'id':'dw_es','name':'DW Español','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream106.akamaized.net/hls/live/2015532/dwstream106/index.m3u8'},
+        # Akamaized streams - likely to work
+        {'id':'aje_ak','name':'Al Jazeera English','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_eng.svg/200px-Aljazeera_eng.svg.png','category':'news','stream':'https://aljazeera-aljazeera-english-live.akamaized.net/hls/live/2027975/aljazeera-english/master.m3u8'},
+        {'id':'bbc_ak','name':'BBC News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_News_2019.svg/200px-BBC_News_2019.svg.png','category':'news','stream':'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/pc_hd_abr_v2.m3u8'},
+        {'id':'euronews_ak','name':'Euronews','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Euronews_logo_2022.svg/200px-Euronews_logo_2022.svg.png','category':'news','stream':'https://euronews-euronews-en-live.akamaized.net/hls/live/2037190/euronews-en/master.m3u8'},
+        {'id':'f24_ak','name':'France 24','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/France_24_logo.svg/200px-France_24_logo.svg.png','category':'news','stream':'https://f24hls-i.akamaihd.net/hls/live/221147/F24_EN_LO_HLS/master.m3u8'},
+        {'id':'realmadrid','name':'Real Madrid TV','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/200px-Real_Madrid_CF.svg.png','category':'sports','stream':'https://rmtv-live.akamaized.net/hls/live/2093126/rmtv/index.m3u8'},
+        {'id':'nasa','name':'NASA TV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/200px-NASA_logo.svg.png','category':'entertainment','stream':'https://nasa-i.akamaihd.net/hls/live/253565/NASA-NTV1-HLS/master.m3u8'},
+        {'id':'redbull','name':'Red Bull TV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Red_Bull_logo.svg/200px-Red_Bull_logo.svg.png','category':'sports','stream':'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8'},
     ]
     return jsonify(channels)
 
