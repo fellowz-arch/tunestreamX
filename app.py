@@ -420,11 +420,10 @@ def live_football():
     except Exception as e:
         print(f'LiveSoccerTV error: {e}')
 
-    # StreamSports / SportsHub as reliable backup for live football
+    # Backup sources for live football
     for site_url, site_name, site_base in [
         ('https://streamsports.net/', 'StreamSports', 'https://streamsports.net'),
         ('https://soccerstreams-100.com/', 'SoccerStreams', 'https://soccerstreams-100.com'),
-        ('https://reddit.soccer-streams.com/', 'SoccerStreams', 'https://reddit.soccer-streams.com'),
     ]:
         if len([s for s in streams if s['isLive']]) >= 20:
             break
@@ -492,11 +491,6 @@ def live_football():
     # HD Streamz
     streams += scrape_source('https://hdstreamz.net/', 'HD Streamz', 'https://hdstreamz.net')
 
-    # TV96
-    streams += scrape_source('https://tv96.net/football/', 'TV96', 'https://tv96.net')
-    if not [s for s in streams if s['channel'] == 'TV96']:
-        streams += scrape_source('https://tv96.net/', 'TV96', 'https://tv96.net')
-
     # SuperSport
     try:
         r = requests.get('https://supersport.com/football', headers=headers, timeout=12)
@@ -534,7 +528,7 @@ def live_football():
     # TheSportsDB free API - no token needed, real live/upcoming matches
     try:
         import datetime
-        today = datetime.datetime.utcnow().strftime('%Y-%m-%d')
+        today = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
         api_r = requests.get(
             f'https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d={today}&s=Soccer',
             headers=headers, timeout=8
@@ -542,11 +536,11 @@ def live_football():
         if api_r.status_code == 200:
             data = api_r.json()
             for match in (data.get('events') or [])[:40]:
-                home = match.get('strHomeTeam', '')
-                away = match.get('strAwayTeam', '')
-                league = match.get('strLeague', '')
-                match_time = match.get('strTime', '') or match.get('strTimestamp', '')[:16]
-                status = match.get('strStatus', '').lower()
+                home = match.get('strHomeTeam') or ''
+                away = match.get('strAwayTeam') or ''
+                league = match.get('strLeague') or ''
+                match_time = match.get('strTime') or match.get('strTimestamp', '')[:16]
+                status = (match.get('strStatus') or '').lower()
                 thumb = match.get('strThumb') or match.get('strBanner') or ''
                 is_live = status in ['live', 'in progress', '1h', '2h', 'ht']
                 is_upcoming = not is_live
