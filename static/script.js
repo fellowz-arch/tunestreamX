@@ -996,20 +996,66 @@ function searchTV(query) {
 
 function playTV(stream, name) {
     document.getElementById('tvPlayerTitle').textContent = '\ud83d\udcfa ' + name;
+    const div = document.getElementById('tvPlayerDiv');
     const frame = document.getElementById('tvPlayerFrame');
-    // Add rel=0&modestbranding=1 for YouTube
-    if (stream.includes('youtube.com')) {
-        frame.src = stream + '&rel=0&modestbranding=1&mute=0';
+    div.style.display = 'block';
+
+    if (stream.includes('.m3u8')) {
+        // Use HLS.js for m3u8 streams
+        frame.style.display = 'none';
+        let video = document.getElementById('tvHLSPlayer');
+        if (!video) {
+            video = document.createElement('video');
+            video.id = 'tvHLSPlayer';
+            video.controls = true;
+            video.autoplay = true;
+            video.style.cssText = 'width:100%;height:calc(100% - 46px);background:#000;display:block;';
+            div.appendChild(video);
+        }
+        video.style.display = 'block';
+
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = stream;
+            video.play();
+        } else {
+            // Load HLS.js dynamically
+            if (!window.Hls) {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+                script.onload = () => startHLS(video, stream);
+                document.head.appendChild(script);
+            } else {
+                startHLS(video, stream);
+            }
+        }
     } else {
+        // iframe for non-m3u8
+        const video = document.getElementById('tvHLSPlayer');
+        if (video) video.style.display = 'none';
+        frame.style.display = 'block';
         frame.src = stream;
     }
-    document.getElementById('tvPlayerDiv').style.display = 'block';
+}
+
+function startHLS(video, stream) {
+    if (window.hlsInstance) {
+        window.hlsInstance.destroy();
+    }
+    if (Hls.isSupported()) {
+        window.hlsInstance = new Hls();
+        window.hlsInstance.loadSource(stream);
+        window.hlsInstance.attachMedia(video);
+        window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+    }
 }
 
 function closeTVPlayer() {
     const frame = document.getElementById('tvPlayerFrame');
     const div = document.getElementById('tvPlayerDiv');
+    const video = document.getElementById('tvHLSPlayer');
     if (frame) frame.src = '';
+    if (video) { video.src = ''; video.style.display = 'none'; }
+    if (window.hlsInstance) { window.hlsInstance.destroy(); window.hlsInstance = null; }
     if (div) div.style.display = 'none';
 }
 

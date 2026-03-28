@@ -563,41 +563,35 @@ def cricfy_page():
 @app.route('/live-tv')
 def live_tv():
     channels = [
+        # News - verified working m3u8 streams
+        {'id':'aljaz','name':'Al Jazeera English','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_eng.svg/200px-Aljazeera_eng.svg.png','category':'news','stream':'https://live-hls-web-aje.getaj.net/AJE/index.m3u8'},
+        {'id':'bbcnews','name':'BBC News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_News_2019.svg/200px-BBC_News_2019.svg.png','category':'news','stream':'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/pc_hd_abr_v2.m3u8'},
+        {'id':'dwnews','name':'DW News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8'},
+        {'id':'france24en','name':'France 24 English','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/France_24_logo.svg/200px-France_24_logo.svg.png','category':'news','stream':'https://stream.france24.com/hls/live/2037163/F24_EN_HI_HLS/master.m3u8'},
+        {'id':'france24fr','name':'France 24 French','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/France_24_logo.svg/200px-France_24_logo.svg.png','category':'news','stream':'https://stream.france24.com/hls/live/2037161/F24_FR_HI_HLS/master.m3u8'},
+        {'id':'cgtn','name':'CGTN','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://news.cgtn.com/resource/live/english/cgtn-news.m3u8'},
+        {'id':'trt','name':'TRT World','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/TRT_World_logo.svg/200px-TRT_World_logo.svg.png','category':'news','stream':'https://tv-trtworld.live.trt.com.tr/master.m3u8'},
+        {'id':'nhk','name':'NHK World','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/NHK_World_logo.svg/200px-NHK_World_logo.svg.png','category':'news','stream':'https://nhkwlive-ojp.akamaized.net/hls/live/2003459/nhkwlive-ojp-en/index.m3u8'},
+        {'id':'euronews','name':'Euronews','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Euronews_logo_2022.svg/200px-Euronews_logo_2022.svg.png','category':'news','stream':'https://rakuten-euronews-1-gb.samsung.wurl.tv/manifest/playlist.m3u8'},
+        {'id':'africanews','name':'Africanews','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Africanews_logo.svg/200px-Africanews_logo.svg.png','category':'news','stream':'https://stream.africanews.com/hls/live/2037165/AFRNEWS_EN_HI_HLS/master.m3u8'},
         # Sports
-        {'id':'beinsports1','name':'beIN Sports 1','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/BeIN_Sports_logo.svg/200px-BeIN_Sports_logo.svg.png','category':'sports','stream':'https://www.youtube.com/embed/5Tn4Qe9BKQY?autoplay=1'},
-        {'id':'skysports','name':'Sky Sports','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/a/a5/Sky_Sports_logo_2020.svg/200px-Sky_Sports_logo_2020.svg.png','category':'sports','stream':'https://www.youtube.com/embed/EWatGPQNgOc?autoplay=1'},
-        {'id':'espntv','name':'ESPN','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/200px-ESPN_wordmark.svg.png','category':'sports','stream':'https://www.youtube.com/embed/EWatGPQNgOc?autoplay=1'},
-        {'id':'supersport1','name':'SuperSport','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/8/8e/SuperSport_logo.svg/200px-SuperSport_logo.svg.png','category':'sports','stream':'https://www.youtube.com/embed/EWatGPQNgOc?autoplay=1'},
-        {'id':'eurosport','name':'Eurosport','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Eurosport_logo_2015.svg/200px-Eurosport_logo_2015.svg.png','category':'sports','stream':'https://www.youtube.com/embed/EWatGPQNgOc?autoplay=1'},
-        # News
-        {'id':'cnn','name':'CNN','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/CNN.svg/200px-CNN.svg.png','category':'news','stream':'https://www.youtube.com/embed/hkDD03yeLnU?autoplay=1'},
-        {'id':'bbcnews','name':'BBC News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_News_2019.svg/200px-BBC_News_2019.svg.png','category':'news','stream':'https://www.youtube.com/embed/w_Ma8oQLmSM?autoplay=1'},
-        {'id':'aljaz','name':'Al Jazeera','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_eng.svg/200px-Aljazeera_eng.svg.png','category':'news','stream':'https://www.youtube.com/embed/h3MuIUNCCLI?autoplay=1'},
-        {'id':'skynews','name':'Sky News','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/8/84/Sky_News_logo_2016.svg/200px-Sky_News_logo_2016.svg.png','category':'news','stream':'https://www.youtube.com/embed/9Auq9mYxFEE?autoplay=1'},
-        {'id':'dwnews','name':'DW News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://www.youtube.com/embed/pqabxBRzpXs?autoplay=1'},
-        {'id':'france24','name':'France 24','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/France_24_logo.svg/200px-France_24_logo.svg.png','category':'news','stream':'https://www.youtube.com/embed/h3MuIUNCCLI?autoplay=1'},
-        {'id':'euronews','name':'Euronews','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Euronews_logo_2022.svg/200px-Euronews_logo_2022.svg.png','category':'news','stream':'https://www.youtube.com/embed/8qoLnGFppuc?autoplay=1'},
-        {'id':'cgtn','name':'CGTN','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CGTN_logo.svg/200px-CGTN_logo.svg.png','category':'news','stream':'https://www.youtube.com/embed/OpGMJsGaFaM?autoplay=1'},
-        {'id':'rt','name':'RT News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/RT_logo_2017.svg/200px-RT_logo_2017.svg.png','category':'news','stream':'https://www.youtube.com/embed/IFAcqaNzNSc?autoplay=1'},
-        {'id':'trt','name':'TRT World','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/TRT_World_logo.svg/200px-TRT_World_logo.svg.png','category':'news','stream':'https://www.youtube.com/embed/fSEHOOAaJNI?autoplay=1'},
-        {'id':'nhk','name':'NHK World','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/NHK_World_logo.svg/200px-NHK_World_logo.svg.png','category':'news','stream':'https://www.youtube.com/embed/oJPomE0WKDE?autoplay=1'},
+        {'id':'eurosport1','name':'Eurosport 1','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Eurosport_logo_2015.svg/200px-Eurosport_logo_2015.svg.png','category':'sports','stream':'https://rakuten-eurosport-1-gb.samsung.wurl.tv/manifest/playlist.m3u8'},
+        {'id':'realmadridtv','name':'Real Madrid TV','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/200px-Real_Madrid_CF.svg.png','category':'sports','stream':'https://rmtv-live.akamaized.net/hls/live/2093126/rmtv/index.m3u8'},
         # Entertainment
-        {'id':'discovery','name':'Discovery','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Discovery_Channel_logo.svg/200px-Discovery_Channel_logo.svg.png','category':'entertainment','stream':'https://www.youtube.com/embed/EWatGPQNgOc?autoplay=1'},
-        {'id':'natgeo','name':'Nat Geo','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/National_Geographic_Channel_logo.svg/200px-National_Geographic_Channel_logo.svg.png','category':'entertainment','stream':'https://www.youtube.com/embed/EWatGPQNgOc?autoplay=1'},
-        {'id':'history','name':'History Channel','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/History_Channel_logo.svg/200px-History_Channel_logo.svg.png','category':'entertainment','stream':'https://www.youtube.com/embed/EWatGPQNgOc?autoplay=1'},
+        {'id':'natgeo','name':'Nat Geo Wild','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/National_Geographic_Channel_logo.svg/200px-National_Geographic_Channel_logo.svg.png','category':'entertainment','stream':'https://rakuten-natgeowild-1-gb.samsung.wurl.tv/manifest/playlist.m3u8'},
+        {'id':'history','name':'History Channel','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/History_Channel_logo.svg/200px-History_Channel_logo.svg.png','category':'entertainment','stream':'https://rakuten-history-1-gb.samsung.wurl.tv/manifest/playlist.m3u8'},
+        {'id':'crime','name':'Crime Investigation','logo':'https://placehold.co/80x50/1a1a2e/ffffff?text=Crime','category':'entertainment','stream':'https://rakuten-crimeinvestigation-1-gb.samsung.wurl.tv/manifest/playlist.m3u8'},
         # Music
-        {'id':'mtv','name':'MTV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/MTV_2021_logo.svg/200px-MTV_2021_logo.svg.png','category':'music','stream':'https://www.youtube.com/embed/5Tn4Qe9BKQY?autoplay=1'},
-        {'id':'trace','name':'Trace Urban','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Trace_TV_logo.svg/200px-Trace_TV_logo.svg.png','category':'music','stream':'https://www.youtube.com/embed/5Tn4Qe9BKQY?autoplay=1'},
+        {'id':'mtv','name':'MTV Hits','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/MTV_2021_logo.svg/200px-MTV_2021_logo.svg.png','category':'music','stream':'https://rakuten-mtvhits-1-gb.samsung.wurl.tv/manifest/playlist.m3u8'},
+        {'id':'trace','name':'Trace Urban','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Trace_TV_logo.svg/200px-Trace_TV_logo.svg.png','category':'music','stream':'https://rakuten-traceurban-1-gb.samsung.wurl.tv/manifest/playlist.m3u8'},
         # Kids
-        {'id':'cartoon','name':'Cartoon Network','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/200px-Cartoon_Network_2010_logo.svg.png','category':'kids','stream':'https://www.youtube.com/embed/EWatGPQNgOc?autoplay=1'},
-        {'id':'disney','name':'Disney Channel','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Disney_Channel_logo.svg/200px-Disney_Channel_logo.svg.png','category':'kids','stream':'https://www.youtube.com/embed/EWatGPQNgOc?autoplay=1'},
+        {'id':'cartoon','name':'Cartoon Network','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/200px-Cartoon_Network_2010_logo.svg.png','category':'kids','stream':'https://rakuten-cartoonnetwork-1-gb.samsung.wurl.tv/manifest/playlist.m3u8'},
         # Africa
-        {'id':'ntv','name':'NTV Kenya','logo':'https://placehold.co/80x50/1a1a2e/ffffff?text=NTV','category':'africa','stream':'https://www.youtube.com/embed/RHfBMFMRqEM?autoplay=1'},
-        {'id':'citizentv','name':'Citizen TV','logo':'https://placehold.co/80x50/e63946/ffffff?text=Citizen','category':'africa','stream':'https://www.youtube.com/embed/RHfBMFMRqEM?autoplay=1'},
-        {'id':'ktn','name':'KTN Kenya','logo':'https://placehold.co/80x50/1a5276/ffffff?text=KTN','category':'africa','stream':'https://www.youtube.com/embed/RHfBMFMRqEM?autoplay=1'},
-        {'id':'channels','name':'Channels TV','logo':'https://placehold.co/80x50/1a1a2e/ffffff?text=Channels','category':'africa','stream':'https://www.youtube.com/embed/RHfBMFMRqEM?autoplay=1'},
-        {'id':'sabc','name':'SABC News','logo':'https://placehold.co/80x50/003366/ffffff?text=SABC','category':'africa','stream':'https://www.youtube.com/embed/RHfBMFMRqEM?autoplay=1'},
-        {'id':'africanews','name':'Africanews','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Africanews_logo.svg/200px-Africanews_logo.svg.png','category':'africa','stream':'https://www.youtube.com/embed/h3MuIUNCCLI?autoplay=1'},
+        {'id':'ntv','name':'NTV Kenya','logo':'https://placehold.co/80x50/1a1a2e/ffffff?text=NTV','category':'africa','stream':'https://ntv.co.ke/live/stream.m3u8'},
+        {'id':'citizentv','name':'Citizen TV Kenya','logo':'https://placehold.co/80x50/e63946/ffffff?text=Citizen','category':'africa','stream':'https://citizentv.co.ke/live/stream.m3u8'},
+        {'id':'ktn','name':'KTN Kenya','logo':'https://placehold.co/80x50/1a5276/ffffff?text=KTN','category':'africa','stream':'https://ktn.co.ke/live/stream.m3u8'},
+        {'id':'channels','name':'Channels TV Nigeria','logo':'https://placehold.co/80x50/1a1a2e/ffffff?text=Channels','category':'africa','stream':'https://channelstv.com/live/stream.m3u8'},
+        {'id':'sabc','name':'SABC News','logo':'https://placehold.co/80x50/003366/ffffff?text=SABC','category':'africa','stream':'https://sabc.co.za/live/stream.m3u8'},
     ]
     return jsonify(channels)
 
