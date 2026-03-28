@@ -634,18 +634,12 @@ def test_streams():
 @app.route('/live-tv')
 def live_tv():
     channels = [
-        # DW - confirmed working on akamaized.net
+        # News - confirmed working
         {'id':'dw_en','name':'DW English','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8'},
         {'id':'dw_de','name':'DW Deutsch','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8'},
         {'id':'dw_ar','name':'DW Arabic','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream105.akamaized.net/hls/live/2015531/dwstream105/index.m3u8'},
-        {'id':'dw_es','name':'DW Español','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png','category':'news','stream':'https://dwamdstream106.akamaized.net/hls/live/2015532/dwstream106/index.m3u8'},
-        # Akamaized streams - likely to work
-        {'id':'aje_ak','name':'Al Jazeera English','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_eng.svg/200px-Aljazeera_eng.svg.png','category':'news','stream':'https://aljazeera-aljazeera-english-live.akamaized.net/hls/live/2027975/aljazeera-english/master.m3u8'},
-        {'id':'bbc_ak','name':'BBC News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_News_2019.svg/200px-BBC_News_2019.svg.png','category':'news','stream':'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/pc_hd_abr_v2.m3u8'},
-        {'id':'euronews_ak','name':'Euronews','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Euronews_logo_2022.svg/200px-Euronews_logo_2022.svg.png','category':'news','stream':'https://euronews-euronews-en-live.akamaized.net/hls/live/2037190/euronews-en/master.m3u8'},
-        {'id':'f24_ak','name':'France 24','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/France_24_logo.svg/200px-France_24_logo.svg.png','category':'news','stream':'https://f24hls-i.akamaihd.net/hls/live/221147/F24_EN_LO_HLS/master.m3u8'},
-        {'id':'realmadrid','name':'Real Madrid TV','logo':'https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/200px-Real_Madrid_CF.svg.png','category':'sports','stream':'https://rmtv-live.akamaized.net/hls/live/2093126/rmtv/index.m3u8'},
-        {'id':'nasa','name':'NASA TV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/200px-NASA_logo.svg.png','category':'entertainment','stream':'https://nasa-i.akamaihd.net/hls/live/253565/NASA-NTV1-HLS/master.m3u8'},
+        {'id':'bbc','name':'BBC News','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_News_2019.svg/200px-BBC_News_2019.svg.png','category':'news','stream':'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/pc_hd_abr_v2.m3u8'},
+        # Sports - confirmed working
         {'id':'redbull','name':'Red Bull TV','logo':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Red_Bull_logo.svg/200px-Red_Bull_logo.svg.png','category':'sports','stream':'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8'},
     ]
     return jsonify(channels)
