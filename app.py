@@ -606,22 +606,48 @@ def stream_proxy():
 
 @app.route('/test-streams')
 def test_streams():
-    import requests
-    streams = [
+    import requests, re
+    h = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    
+    # Test confirmed streams
+    direct_streams = [
         ('K24 Main', 'https://livecdn.premiumfree.tv/afxpstr/K24Main/index.m3u8'),
         ('K24 Backup', 'https://livecdn.premiumfree.tv/afxpstr/K24Backup/index.m3u8'),
         ('Arise News', 'https://dr4ml9ab0dhif.cloudfront.net/out/v1/5710c90584544be4ba1270f7d8d69932/index.m3u8'),
-        ('Citizen stream2', 'https://citizentv.co.ke/wp-json/citizentv/v1/stream'),
-        ('NTV stream2', 'https://ntv.co.ke/wp-json/ntv/v1/stream'),
     ]
+    
+    # Scrape these sites for m3u8 URLs
+    scrape_sites = [
+        ('Citizen TV', 'https://citizentv.co.ke/live/'),
+        ('NTV Kenya', 'https://ntv.co.ke/live/'),
+        ('KTN Kenya', 'https://ktn.co.ke/live/'),
+        ('KBC Kenya', 'https://kbc.co.ke/live/'),
+        ('Inooro TV', 'https://inoorotv.co.ke/live/'),
+        ('KTN Home', 'https://ktnh.co.ke/live/'),
+        ('Channels TV', 'https://www.channelstv.com/live/'),
+        ('SABC News', 'https://www.sabcnews.com/live/'),
+        ('eNCA', 'https://www.enca.com/live'),
+        ('TV47', 'https://tv47.co.ke/live/'),
+        ('Spice FM', 'https://spicefm.co.ke/live/'),
+        ('Nation Africa', 'https://nation.africa/kenya/live/'),
+    ]
+    
     results = {}
-    h = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-    for name, url in streams:
+    for name, url in direct_streams:
         try:
             r = requests.get(url, timeout=8, headers=h)
-            results[name] = {'ok': r.status_code == 200, 'status': r.status_code, 'snippet': r.text[:100]}
+            results[name] = {'ok': r.status_code == 200, 'status': r.status_code}
         except Exception as e:
-            results[name] = {'ok': False, 'status': 'error', 'error': str(e)[:60]}
+            results[name] = {'ok': False, 'error': str(e)[:60]}
+    
+    for name, url in scrape_sites:
+        try:
+            r = requests.get(url, timeout=10, headers=h, allow_redirects=True)
+            m3u8 = re.findall(r'https?://[^"\s\'<>]+\.m3u8[^"\s\'<>]*', r.text)
+            results[name] = {'ok': r.status_code == 200, 'status': r.status_code, 'm3u8': list(set(m3u8))[:3]}
+        except Exception as e:
+            results[name] = {'ok': False, 'error': str(e)[:60]}
+    
     return jsonify(results)
 
 
